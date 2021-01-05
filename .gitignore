@@ -3,3 +3,4 @@ temp
 .vscode/*
 *.code-workspace
 *.txt
+traces/*

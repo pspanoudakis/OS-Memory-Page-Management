@@ -12,10 +12,12 @@ using std::endl;
 using std::ifstream;
 using std::ios;
 
+#define INPUT_FILE "traces/gcc.trace"
+
 int main(int argc, char const *argv[])
 {
     ifstream finput;
-    finput.open("input.txt", ios::in);
+    finput.open(INPUT_FILE, ios::in);
     if (!finput) {
         cerr << "Unable to open specified file. Abort." << endl;
         return 1; 
