@@ -12,7 +12,8 @@ using std::endl;
 using std::ifstream;
 using std::ios;
 
-#define INPUT_FILE "traces/gcc.trace"
+//#define INPUT_FILE "traces/gcc.trace"
+#define INPUT_FILE "wrong.txt"
 
 int main(int argc, char const *argv[])
 {
@@ -33,6 +34,15 @@ int main(int argc, char const *argv[])
     while (finput.getline(buffer, 11))
     {
         cout << buffer << endl;
+    }
+    if (!finput.eof())
+    {        
+        cerr << "Unexpected line syntax found." << endl;
+        cerr << "Each line must have an 8-digit hexadecimal number, a white space and a 'W'/'R' character," << endl;
+        cerr << "plus a newline character at the end (11 characters in total)." << endl;
+        finput.close();
+        cerr << "Aborting." << endl;
+        return 1;
     }
     finput.close();
     return 0;
