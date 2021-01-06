@@ -1,17 +1,11 @@
 #include <iostream>
 //#include <deque>
-
-#include <vector>
 #include <fstream>
 #include <string.h>
-#include <stdlib.h>
+#include <cstdlib>
 
-// For testing
-using std::vector;
-#include "temp.hpp"
+#include "utils.hpp"
 
-
-//using namespace std;
 using std::cout;
 using std::cerr;
 using std::endl;
@@ -23,6 +17,7 @@ using std::ios;
 #define LINE_SIZE 11
 #define ADDRESS_LENGTH 32
 #define OFFSET_LENGTH 12
+#define PAGE_TABLE_BUCKETS 10
 
 int main(int argc, char const *argv[])
 {
@@ -35,15 +30,11 @@ int main(int argc, char const *argv[])
         cerr << "Unable to open specified file. Abort." << endl;
         return 1; 
     }
-    vector<TestShiftEntry> results;
-    TestShiftEntry entry;
     char buffer[LINE_SIZE];
-    /*
-    for (int i = 0; i < 11; i++)
-    {
-        buffer[i] = '^';
-    }
-    */
+
+    PageTableBucket *page_table;
+    InitializePageTable(&page_table, PAGE_TABLE_BUCKETS);
+
     while (finput.getline(buffer, LINE_SIZE))
     {
         cout << buffer << endl;
@@ -52,11 +43,7 @@ int main(int argc, char const *argv[])
         offset = logical_address << (ADDRESS_LENGTH - OFFSET_LENGTH); 
         offset = offset >> (ADDRESS_LENGTH - OFFSET_LENGTH);
 
-        // For testing
-        entry.offset = offset;
-        entry.page_number = page_num;
-        entry.address_text.assign(buffer, 8);
-        results.push_back(entry);
+        InsertEntryToPageTable(page_table, page_num, 666, false, PAGE_TABLE_BUCKETS);
     }
     if (!finput.eof())
     {
@@ -68,17 +55,8 @@ int main(int argc, char const *argv[])
         return 1;
     }
     finput.close();
-
-    // For testing
-    cout << "------------------------------------" << endl;
-
-    for(int i = 0; i < results.size(); i++)
-    {
-        cout << "Address: " << results[i].address_text << endl;
-        cout << "Page Number: " << results[i].page_number << endl;
-        cout << "Offset: " << results[i].offset << endl;
-        cout << "------------------------------------" << endl;
-    }
+    PrintTableEntries(page_table, PAGE_TABLE_BUCKETS);
+    DeletePageTable(page_table, PAGE_TABLE_BUCKETS);
 
     return 0;
 }
