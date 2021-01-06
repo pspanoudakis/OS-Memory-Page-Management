@@ -7,17 +7,21 @@ using std::list;
 
 /* Page Table Entry functions -------------------------------------------------*/
 
-void PageTableEntry::set(int page, int frame, bool modified)
+void PageTableEntry::set(int page, int frame, bool modified, bool referenced)
 {
     this->page_num = page;
     this->frame_num = frame;
     this->modified = modified;
+    this->referenced = referenced;
 }
 
+/*
 inline void PageTableEntry::markAsModified() { this->modified = true; }
+inline bool PageTableEntry::isModified() { return this->modified; }
+inline bool PageTableEntry::isReferenced() { return this->; }
 
 inline int PageTableEntry::pageNumber() { return page_num; }
-
+*/
 // To be deleted --------------------------------------------------------------
 #include <iostream>
 
@@ -25,9 +29,9 @@ void PageTableEntry::print()
 {
     using std::cout;
     using std::endl;
+    cout << "------------------------------------" << endl;
     cout << "Page Number: " << page_num << endl;
     cout << "Frame: " << frame_num << endl;
-    cout << "------------------------------------" << endl;
 }
 
 void PrintTableEntries(PageTableBucket *table, int buckets)
@@ -60,13 +64,14 @@ PageTableEntry* PageTableBucket::getPageEntry(int page)
     // Iterating over the entries list
     for (itr = this->elements->begin(); itr != end; itr++)
     {
-        if (itr->pageNumber() == page)
+        if (itr->page_num == page)
         // If an entry for the specified page number is found,
         {
             // Return its address (so that iteration is not needed again)
             return &(*itr);
         }
     }
+    // No Entry for the specified page number was found
     return NULL;
 }
 
@@ -80,6 +85,25 @@ void PageTableBucket::insertEntry(PageTableEntry entry)
     }
     // Having ensured the elements list exists, we insert the entry
     this->elements->push_back(entry);
+}
+
+void PageTableBucket::deletePageEntry(int page)
+{
+    if (this->elements == NULL) { return; }
+
+    list<PageTableEntry>::iterator itr;
+    list<PageTableEntry>::iterator end = this->elements->end();
+
+    // Iterating over the entries list
+    for (itr = this->elements->begin(); itr != end; itr++)
+    {
+        if (itr->page_num == page)
+        // If an entry for the specified page number is found,
+        {
+            // Remove it from the list
+            this->elements->erase(itr);
+        }
+    }
 }
 
 inline bool PageTableBucket::empty()
@@ -107,12 +131,12 @@ void DeletePageTable(PageTableBucket *table, int size)
     delete [] table;
 }
 
-void InsertEntryToPageTable(PageTableBucket *table, int page, int frame, bool modified, int buckets)
+void InsertEntryToPageTable(PageTableBucket *table, int page, int frame, bool modified, bool referenced, int buckets)
 {
     int hashcode = PageHashcode(page, buckets);
 
     PageTableEntry new_entry;
-    new_entry.set(page, frame, modified);
+    new_entry.set(page, frame, modified, referenced);
 
     table[hashcode].insertEntry(new_entry);
 }
@@ -121,4 +145,10 @@ PageTableEntry* GetPageTableEntry(PageTableBucket *table, int page, int buckets)
 {
     int hashcode = PageHashcode(page, buckets);
     return table[hashcode].getPageEntry(page);
+}
+
+void DeletePageTableEntry(PageTableBucket *table, int page, int buckets)
+{
+    int hashcode = PageHashcode(page, buckets);
+    table[hashcode].deletePageEntry(page);
 }

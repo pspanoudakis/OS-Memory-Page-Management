@@ -1,8 +1,13 @@
+#include <iostream>
 #include <openssl/sha.h>
 #include <cstdlib>
 #include <cstring>
 
 #include "utils.hpp"
+
+using std::cout;
+using std::cerr;
+using std::endl;
 
 int PageHashcode(int page, unsigned long int mod)
 {
@@ -25,4 +30,29 @@ int PageHashcode(int page, unsigned long int mod)
     hash_num = hash_num % mod;
     result = hash_num;
     return result;
+}
+
+void extractTrace(char *buffer, char &action, unsigned int &page_number, unsigned int &offset)
+{
+    long logical_address;
+
+    action = buffer[LINE_SIZE - 2];
+    logical_address = strtol(buffer, NULL, 16);
+    page_number = logical_address >> OFFSET_LENGTH;
+    offset = logical_address << (ADDRESS_LENGTH - OFFSET_LENGTH); 
+    offset = offset >> (ADDRESS_LENGTH - OFFSET_LENGTH);
+}
+
+// NOT DONE
+void checkArgs(int argc, const char *argv[])
+{
+    if ( argc < 4 )
+    {
+        cerr << "Insufficient arguments." << endl;
+        cout << "Execution example:" << endl;
+        cout << "./main <LRU>/<2CH> <Number of Frames> <References per Process>" << endl;
+        cout << "Optional args: <max total traces> (to be placed last)" << endl;
+
+        exit(EXIT_FAILURE);
+    }
 }
