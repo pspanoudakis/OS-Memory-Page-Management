@@ -1,5 +1,4 @@
 #include <list>
-#include <algorithm>
 #include <iterator>
 #include "utils.hpp"
 
@@ -30,7 +29,7 @@ PageTableEntry* GetBucketPageEntry(PageTableBucket &bucket, int page)
     if (bucket.elements == NULL) { return NULL; }
 
     list<PageTableEntry>::iterator itr;
-    list<PageTableEntry>::const_iterator end = bucket.elements->end();
+    list<PageTableEntry>::iterator end = bucket.elements->end();
 
     // Iterating over the entries list
     for (itr = bucket.elements->begin(); itr != end; itr++)
@@ -73,4 +72,22 @@ void DeletePageTable(PageTableBucket *table, int size)
             table->elements->clear();
         }
     }
+}
+
+void InsertEntryToPageTable(PageTableBucket *table, int page, int frame, bool modified)
+{
+    int hashcode = PageHashcode(page);
+
+    PageTableEntry new_entry;
+    new_entry.page_num = page;
+    new_entry.frame_num = frame;
+    new_entry.modified = modified;
+
+    InsertEntryToBucket(table[hashcode], new_entry);
+}
+
+PageTableEntry* GetPageTableEntry(PageTableBucket *table, int page)
+{
+    int hashcode = PageHashcode(page);
+    return GetBucketPageEntry(table[hashcode], page);
 }

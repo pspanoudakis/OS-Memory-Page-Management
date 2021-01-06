@@ -1,5 +1,7 @@
 !*.cpp
+!*.hpp
 temp
+main
 .vscode/*
 *.code-workspace
 *.txt
