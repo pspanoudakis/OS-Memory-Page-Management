@@ -1,4 +1,4 @@
-!temp.cpp
+!*.cpp
 temp
 .vscode/*
 *.code-workspace
