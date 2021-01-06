@@ -4,6 +4,7 @@
 #include <string.h>
 #include <cstdlib>
 
+#include "page_table.hpp"
 #include "utils.hpp"
 
 using std::cout;
@@ -21,6 +22,17 @@ using std::ios;
 
 int main(int argc, char const *argv[])
 {
+    /*
+    if ( argc < 4 )
+    {
+        cout << "Insufficient arguments." << endl;
+        cout << "Execution example:" << endl;
+        cout << "./main <LRU>/<2CH> <Number of Frames> <References per Process>" << endl;
+        cout << "Optional args: <max total traces> (to be placed last)" << endl;
+
+        return 1;
+    }
+    */
     ifstream finput;
     long logical_address;
     unsigned int page_num;
@@ -31,12 +43,14 @@ int main(int argc, char const *argv[])
         return 1; 
     }
     char buffer[LINE_SIZE];
+    char action;
 
     PageTableBucket *page_table;
     InitializePageTable(&page_table, PAGE_TABLE_BUCKETS);
 
     while (finput.getline(buffer, LINE_SIZE))
     {
+        action = buffer[9];
         cout << buffer << endl;
         logical_address = strtol(buffer, NULL, 16);
         page_num = logical_address >> OFFSET_LENGTH;
