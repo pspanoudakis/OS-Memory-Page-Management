@@ -108,7 +108,7 @@ void PageTableBucket::insertEntry(PageTableEntry entry)
     this->elements->push_back(entry);
 }
 
-bool PageTableBucket::empty()
+inline bool PageTableBucket::empty()
 {
     return ( (this->elements == NULL) || (this->elements->size() == 0));
 }
