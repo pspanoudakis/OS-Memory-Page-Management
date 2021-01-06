@@ -7,16 +7,6 @@
 
 using std::list;
 
-struct PageTableEntry {
-    int page_num;
-    int frame_num;
-    bool modified = 0;
-};
-
-struct PageTableBucket {
-    list<PageTableEntry> *elements = NULL;
-};
-
 //TODO
 int PageHashcode(int page, unsigned long int mod)
 {
@@ -42,27 +32,27 @@ int PageHashcode(int page, unsigned long int mod)
 }
 
 /* Page Table Entry functions -------------------------------------------------*/
-void SetEntry(PageTableEntry &entry, int page, int frame, bool modified)
+
+void PageTableEntry::set(int page, int frame, bool modified)
 {
-    entry.page_num = page;
-    entry.frame_num = frame;
-    entry.modified = modified;
+    this->page_num = page;
+    this->frame_num = frame;
+    this->modified = modified;
 }
 
-void MarkEntryAsModified(PageTableEntry &entry)
-{
-    entry.modified = true;
-}
+inline void PageTableEntry::markAsModified() { this->modified = true; }
+
+inline int PageTableEntry::pageNumber() { return page_num; }
 
 // To be deleted --------------------------------------------------------------
 #include <iostream>
 
-void PrintEntry(PageTableEntry &entry)
+void PageTableEntry::print()
 {
     using std::cout;
     using std::endl;
-    cout << "Page Number: " << entry.page_num << endl;
-    cout << "Frame: " << entry.frame_num << endl;
+    cout << "Page Number: " << page_num << endl;
+    cout << "Frame: " << frame_num << endl;
     cout << "------------------------------------" << endl;
 }
 
@@ -77,24 +67,26 @@ void PrintTableEntries(PageTableBucket *table, int buckets)
         // Iterating over the entries list
         for (itr = table[i].elements->begin(); itr != end; itr++)
         {
-            PrintEntry(*itr);
+            itr->print();
         }
     }
 }
 //-----------------------------------------------------------------
 
 /* Hash Page Table Bucket functions -------------------------------------------*/
-PageTableEntry* GetBucketPageEntry(PageTableBucket &bucket, int page)
+PageTableBucket::PageTableBucket(): elements(NULL) {}
+
+PageTableEntry* PageTableBucket::getPageEntry(int page)
 {
-    if (bucket.elements == NULL) { return NULL; }
+    if (this->elements == NULL) { return NULL; }
 
     list<PageTableEntry>::iterator itr;
-    list<PageTableEntry>::iterator end = bucket.elements->end();
+    list<PageTableEntry>::iterator end = this->elements->end();
 
     // Iterating over the entries list
-    for (itr = bucket.elements->begin(); itr != end; itr++)
+    for (itr = this->elements->begin(); itr != end; itr++)
     {
-        if (itr->page_num == page)
+        if (itr->pageNumber() == page)
         // If an entry for the specified page number is found,
         {
             // Return its address (so that iteration is not needed again)
@@ -104,21 +96,21 @@ PageTableEntry* GetBucketPageEntry(PageTableBucket &bucket, int page)
     return NULL;
 }
 
-void InsertEntryToBucket(PageTableBucket &bucket, PageTableEntry entry)
+void PageTableBucket::insertEntry(PageTableEntry entry)
 {
-    if (bucket.elements == NULL)
+    if (this->elements == NULL)
     // Bucket is not initialized (elements list has not been created)
     {
         // Create the list
-        bucket.elements = new list<PageTableEntry>;
+        this->elements = new list<PageTableEntry>;
     }
     // Having ensured the elements list exists, we insert the entry
-    bucket.elements->push_back(entry);
+    this->elements->push_back(entry);
 }
 
-bool BucketIsEmpty(const PageTableBucket &bucket)
+bool PageTableBucket::empty()
 {
-    return ( (bucket.elements == NULL) || (bucket.elements->size() == 0));
+    return ( (this->elements == NULL) || (this->elements->size() == 0));
 }
 
 /* Hash Page Table functions --------------------------------------------------*/
@@ -145,15 +137,13 @@ void InsertEntryToPageTable(PageTableBucket *table, int page, int frame, bool mo
     int hashcode = PageHashcode(page, buckets);
 
     PageTableEntry new_entry;
-    new_entry.page_num = page;
-    new_entry.frame_num = frame;
-    new_entry.modified = modified;
+    new_entry.set(page, frame, modified);
 
-    InsertEntryToBucket(table[hashcode], new_entry);
+    table[hashcode].insertEntry(new_entry);
 }
 
 PageTableEntry* GetPageTableEntry(PageTableBucket *table, int page, int buckets)
 {
     int hashcode = PageHashcode(page, buckets);
-    return GetBucketPageEntry(table[hashcode], page);
+    return table[hashcode].getPageEntry(page);
 }
