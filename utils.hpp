@@ -1,33 +1,24 @@
-struct PageTableEntry;
+#ifndef UTILS_HPP
+#define UTILS_HPP
 
-struct PageTableBucket;
+#define LINE_SIZE 11
+#define ADDRESS_LENGTH 32
+#define OFFSET_LENGTH 12
 
-int PageHashcode(int page, unsigned long int mod);
+#include "page_table.hpp"
 
-/* Page Table Entry functions -------------------------------------------------*/
+class QueueEntry
+{
+    public:
+    PageTableEntry* table_entry = NULL;
+    short process_id;
+};
 
-void SetEntry(PageTableEntry &entry, int page, int frame, bool modified);
+int pageHashcode(int page, unsigned long int mod);
+void extractTrace(char *buffer, char &action, unsigned int &page_number, unsigned int &offset);
+void checkArgs(int argc, const char *argv[]);
 
-void MarkEntryAsModified(PageTableEntry &entry);
+// To be deleted
+#define FRAMES 4
 
-/* Hash Page Table Bucket functions -------------------------------------------*/
-
-PageTableEntry* GetBucketPageEntry(PageTableBucket &bucket, int page);
-
-void InsertEntryToBucket(PageTableBucket &bucket, PageTableEntry entry);
-
-bool BucketIsEmpty(const PageTableBucket &bucket);
-
-/* Hash Page Table functions --------------------------------------------------*/
-
-void InitializePageTable(PageTableBucket **table, int num_buckets);
-
-void DeletePageTable(PageTableBucket *table, int size);
-
-void InsertEntryToPageTable(PageTableBucket *table, int page, int frame, bool modified, int buckets);
-
-PageTableEntry* GetPageTableEntry(PageTableBucket *table, int page, int buckets);
-
-// To be deleted---------------------------------------------------------------
-void PrintEntry(PageTableEntry &entry);
-void PrintTableEntries(PageTableBucket *table, int buckets);
+#endif

@@ -1,24 +1,15 @@
-#include <list>
-#include <iterator>
+#include <iostream>
 #include <openssl/sha.h>
 #include <cstdlib>
 #include <cstring>
+
 #include "utils.hpp"
 
-using std::list;
+using std::cout;
+using std::cerr;
+using std::endl;
 
-struct PageTableEntry {
-    int page_num;
-    int frame_num;
-    bool modified = 0;
-};
-
-struct PageTableBucket {
-    list<PageTableEntry> *elements = NULL;
-};
-
-//TODO
-int PageHashcode(int page, unsigned long int mod)
+int pageHashcode(int page, unsigned long int mod)
 {
     int result;
     const unsigned char *data = (const unsigned char*)&page;
@@ -41,119 +32,27 @@ int PageHashcode(int page, unsigned long int mod)
     return result;
 }
 
-/* Page Table Entry functions -------------------------------------------------*/
-void SetEntry(PageTableEntry &entry, int page, int frame, bool modified)
+void extractTrace(char *buffer, char &action, unsigned int &page_number, unsigned int &offset)
 {
-    entry.page_num = page;
-    entry.frame_num = frame;
-    entry.modified = modified;
+    long logical_address;
+
+    action = buffer[LINE_SIZE - 2];
+    logical_address = strtol(buffer, NULL, 16);
+    page_number = logical_address >> OFFSET_LENGTH;
+    offset = logical_address << (ADDRESS_LENGTH - OFFSET_LENGTH); 
+    offset = offset >> (ADDRESS_LENGTH - OFFSET_LENGTH);
 }
 
-void MarkEntryAsModified(PageTableEntry &entry)
+// NOT DONE
+void checkArgs(int argc, const char *argv[])
 {
-    entry.modified = true;
-}
-
-// To be deleted --------------------------------------------------------------
-#include <iostream>
-
-void PrintEntry(PageTableEntry &entry)
-{
-    using std::cout;
-    using std::endl;
-    cout << "Page Number: " << entry.page_num << endl;
-    cout << "Frame: " << entry.frame_num << endl;
-    cout << "------------------------------------" << endl;
-}
-
-void PrintTableEntries(PageTableBucket *table, int buckets)
-{
-    list<PageTableEntry>::iterator itr;
-    list<PageTableEntry>::iterator end;
-    for (int i = 0; i < buckets; i++)
+    if ( argc < 4 )
     {
-        if (table[i].elements == NULL) { continue; }
-        end = table[i].elements->end();
-        // Iterating over the entries list
-        for (itr = table[i].elements->begin(); itr != end; itr++)
-        {
-            PrintEntry(*itr);
-        }
+        cerr << "Insufficient arguments." << endl;
+        cout << "Execution example:" << endl;
+        cout << "./main <LRU>/<2CH> <Number of Frames> <References per Process>" << endl;
+        cout << "Optional args: <max total traces> (to be placed last)" << endl;
+
+        exit(EXIT_FAILURE);
     }
-}
-//-----------------------------------------------------------------
-
-/* Hash Page Table Bucket functions -------------------------------------------*/
-PageTableEntry* GetBucketPageEntry(PageTableBucket &bucket, int page)
-{
-    if (bucket.elements == NULL) { return NULL; }
-
-    list<PageTableEntry>::iterator itr;
-    list<PageTableEntry>::iterator end = bucket.elements->end();
-
-    // Iterating over the entries list
-    for (itr = bucket.elements->begin(); itr != end; itr++)
-    {
-        if (itr->page_num == page)
-        // If an entry for the specified page number is found,
-        {
-            // Return its address (so that iteration is not needed again)
-            return &(*itr);
-        }
-    }
-    return NULL;
-}
-
-void InsertEntryToBucket(PageTableBucket &bucket, PageTableEntry entry)
-{
-    if (bucket.elements == NULL)
-    // Bucket is not initialized (elements list has not been created)
-    {
-        // Create the list
-        bucket.elements = new list<PageTableEntry>;
-    }
-    // Having ensured the elements list exists, we insert the entry
-    bucket.elements->push_back(entry);
-}
-
-bool BucketIsEmpty(const PageTableBucket &bucket)
-{
-    return ( (bucket.elements == NULL) || (bucket.elements->size() == 0));
-}
-
-/* Hash Page Table functions --------------------------------------------------*/
-
-void InitializePageTable(PageTableBucket **table, int num_buckets)
-{
-    *table = new PageTableBucket[num_buckets];
-}
-
-void DeletePageTable(PageTableBucket *table, int size)
-{
-    for (int i = 0; i < size; i++)
-    {
-        if (table[i].elements != NULL)
-        {
-            table->elements->clear();
-        }
-    }
-    delete [] table;
-}
-
-void InsertEntryToPageTable(PageTableBucket *table, int page, int frame, bool modified, int buckets)
-{
-    int hashcode = PageHashcode(page, buckets);
-
-    PageTableEntry new_entry;
-    new_entry.page_num = page;
-    new_entry.frame_num = frame;
-    new_entry.modified = modified;
-
-    InsertEntryToBucket(table[hashcode], new_entry);
-}
-
-PageTableEntry* GetPageTableEntry(PageTableBucket *table, int page, int buckets)
-{
-    int hashcode = PageHashcode(page, buckets);
-    return GetBucketPageEntry(table[hashcode], page);
 }
