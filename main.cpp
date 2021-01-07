@@ -5,6 +5,7 @@
 #include <cstdlib>
 
 #include "page_table.hpp"
+#include "page_handling.hpp"
 #include "utils.hpp"
 
 using std::cout;
@@ -17,6 +18,9 @@ using std::deque;
 //#define INPUT_FILE "traces/gcc.trace"
 #define INPUT_FILE "input.txt"
 #define PAGE_TABLE_BUCKETS 10
+
+int disk_writes;
+int disk_reads;
 
 void LRU_Main(ifstream &infile, PageTableBucket *page_table, char *memory_frames, int num_frames);
 void secondChanceMain(ifstream &infile, PageTableBucket *page_table, char *memory_frames, int num_frames);
@@ -92,15 +96,23 @@ void LRU_Main(ifstream &infile, PageTableBucket *page_table, char *memory_frames
     }
 }
 
-void secondChanceMain(ifstream &infile, PageTableBucket *page_table, char *memory_frames, int num_frames)
+void secondChanceMain(ifstream &infile, PageTableBucket *page_table, char *memory_frames, const int num_frames)
 {
-    int first_free_frame = 0;
-    char buffer[LINE_SIZE];                         // Buffer to initially place every trace text line
 
+    int occupied_frames = 0;                        // This counts the occupied frames. It is meant to be modified by
+                                                    // The internal functions of the algorithm, not by main.
+    char buffer[LINE_SIZE];                         // Buffer to initially place every trace text line
     // Extracted information from every trace is stored in these
     unsigned int page_num;
     unsigned int offset;
     char action;
+    PageTableEntry *current_page_entry;
+    QueueEntry new_queue_entry;
+    int available_frame;
+    int pid;
+
+    // All pages in memory will be stored here
+    deque<QueueEntry> page_queue;
 
     while (infile.getline(buffer, LINE_SIZE) )
     {
@@ -109,8 +121,47 @@ void secondChanceMain(ifstream &infile, PageTableBucket *page_table, char *memor
 
         extractTrace(buffer, action, page_num, offset);
         
-        cout << buffer << endl;
+        current_page_entry = getPageTableEntry(page_table, page_num, PAGE_TABLE_BUCKETS);
+        if (current_page_entry != NULL)
+        // There is an entry for this page in the Page Table
+        {
+            if (current_page_entry->valid)
+            // The entry is valid
+            {
+                // Update flags if needed
+                current_page_entry->referenced = true;
+                if ( !current_page_entry->modified )
+                {
+                    // If this is a write operation and the entry is not marked as modified, set the flag to true
+                    current_page_entry->modified = (action == 'W');
+                }
+            }
+            else
+            // Page is stored in Page Table, but frame number is invalid, so the page is not present in memory
+            {
+                // Find Empty frame to place it
+                available_frame = secondChanceGetAvailableFrame(page_table, page_queue, memory_frames, 
+                                                                occupied_frames, num_frames, disk_writes);
 
-        insertEntryToPageTable(page_table, page_num, 666, (action == 'W'), true, PAGE_TABLE_BUCKETS);
+                // Retrieving from disk
+                disk_reads++;
+
+                // Updating the correspoding entry in page table
+                current_page_entry->frame_num = available_frame;
+                current_page_entry->modified = (action == 'W');
+                current_page_entry->referenced = true;
+                current_page_entry->valid = true;
+                memory_frames[available_frame] = '1';
+            }
+            continue;
+        }
+        disk_reads++;
+        available_frame = secondChanceGetAvailableFrame(page_table, page_queue, memory_frames, 
+                                                        occupied_frames, num_frames, disk_writes);
+        current_page_entry = insertEntryToPageTable(page_table, page_num, occupied_frames, (action == 'W'), true, PAGE_TABLE_BUCKETS);
+        memory_frames[available_frame] = '1';
+        new_queue_entry.table_entry = current_page_entry;
+        new_queue_entry.process_id = pid;
+        page_queue.push_back(new_queue_entry);
     }
 }

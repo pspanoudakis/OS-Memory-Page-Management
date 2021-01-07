@@ -1,11 +1,15 @@
+#ifndef UTILS_HPP
+#define UTILS_HPP
+
 #define LINE_SIZE 11
 #define ADDRESS_LENGTH 32
 #define OFFSET_LENGTH 12
 
 #include "page_table.hpp"
 
-struct QueueEntry
+class QueueEntry
 {
+    public:
     PageTableEntry* table_entry = NULL;
     short process_id;
 };
@@ -16,3 +20,5 @@ void checkArgs(int argc, const char *argv[]);
 
 // To be deleted
 #define FRAMES 10
+
+#endif

@@ -9,6 +9,7 @@ class PageTableEntry {
         int frame_num;
         bool modified;
         bool referenced;
+        bool valid = true;
         void set(int page, int frame, bool modified, bool referenced);
         void print();
 };
@@ -19,7 +20,7 @@ class PageTableBucket {
         std::forward_list<PageTableEntry>::iterator last;
         PageTableBucket();
         PageTableEntry* getPageEntry(int page);
-        void insertEntry(PageTableEntry entry);
+        PageTableEntry* insertEntry(PageTableEntry entry);
         void deletePageEntry(int page);
 };
 
@@ -29,7 +30,7 @@ void initializePageTable(PageTableBucket **table, int num_buckets);
 
 void deletePageTable(PageTableBucket *table, int size);
 
-void insertEntryToPageTable(PageTableBucket *table, int page, int frame, bool modified, bool referenced, int buckets);
+PageTableEntry* insertEntryToPageTable(PageTableBucket *table, int page, int frame, bool modified, bool referenced, int buckets);
 
 PageTableEntry* getPageTableEntry(PageTableBucket *table, int page, int buckets);
 

@@ -75,18 +75,17 @@ PageTableEntry* PageTableBucket::getPageEntry(int page)
     return NULL;
 }
 
-void PageTableBucket::insertEntry(PageTableEntry entry)
+PageTableEntry* PageTableBucket::insertEntry(PageTableEntry entry)
 {
     if (this->elements == NULL)
     // Bucket is not initialized (elements list has not been created)
     {
         // Create the list
         this->elements = new forward_list<PageTableEntry>;
-        elements->push_front(entry);
-        this->last = elements->begin();
-        return;
+        this->last = elements->before_begin();
     }
     this->last = elements->insert_after(this->last, entry);
+    return &(*last);
 }
 
 void PageTableBucket::deletePageEntry(int page)
@@ -136,14 +135,14 @@ void deletePageTable(PageTableBucket *table, int size)
     delete [] table;
 }
 
-void insertEntryToPageTable(PageTableBucket *table, int page, int frame, bool modified, bool referenced, int buckets)
+PageTableEntry* insertEntryToPageTable(PageTableBucket *table, int page, int frame, bool modified, bool referenced, int buckets)
 {
     int hashcode = pageHashcode(page, buckets);
 
     PageTableEntry new_entry;
     new_entry.set(page, frame, modified, referenced);
 
-    table[hashcode].insertEntry(new_entry);
+    return table[hashcode].insertEntry(new_entry);
 }
 
 PageTableEntry* getPageTableEntry(PageTableBucket *table, int page, int buckets)
