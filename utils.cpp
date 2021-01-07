@@ -9,7 +9,7 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
-int PageHashcode(int page, unsigned long int mod)
+int pageHashcode(int page, unsigned long int mod)
 {
     int result;
     const unsigned char *data = (const unsigned char*)&page;

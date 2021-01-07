@@ -1,17 +1,9 @@
-//#include <list>
+#ifndef PAGE_TABLE_HPP
+#define PAGE_TABLE_HPP
+
 #include <forward_list>
 
 class PageTableEntry {
-    /*
-    int page_num;
-    int frame_num;
-    bool modified;
-    bool referenced;
-    int pageNumber();
-    void markAsModified();
-    bool isModified();
-    bool isReferenced();
-    */
     public:
         int page_num;
         int frame_num;
@@ -33,15 +25,17 @@ class PageTableBucket {
 
 /* Hash Page Table functions --------------------------------------------------*/
 
-void InitializePageTable(PageTableBucket **table, int num_buckets);
+void initializePageTable(PageTableBucket **table, int num_buckets);
 
-void DeletePageTable(PageTableBucket *table, int size);
+void deletePageTable(PageTableBucket *table, int size);
 
-void InsertEntryToPageTable(PageTableBucket *table, int page, int frame, bool modified, bool referenced, int buckets);
+void insertEntryToPageTable(PageTableBucket *table, int page, int frame, bool modified, bool referenced, int buckets);
 
-PageTableEntry* GetPageTableEntry(PageTableBucket *table, int page, int buckets);
+PageTableEntry* getPageTableEntry(PageTableBucket *table, int page, int buckets);
 
-void DeletePageTableEntry(PageTableBucket *table, int page, int buckets);
+void deletePageTableEntry(PageTableBucket *table, int page, int buckets);
 
 // To be deleted---------------------------------------------------------------
-void PrintTableEntries(PageTableBucket *table, int buckets);
+void printTableEntries(PageTableBucket *table, int buckets);
+
+#endif

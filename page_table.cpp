@@ -34,7 +34,7 @@ void PageTableEntry::print()
     cout << "Frame: " << frame_num << endl;
 }
 
-void PrintTableEntries(PageTableBucket *table, int buckets)
+void printTableEntries(PageTableBucket *table, int buckets)
 {
     forward_list<PageTableEntry>::iterator itr;
     forward_list<PageTableEntry>::iterator end;
@@ -118,12 +118,12 @@ void PageTableBucket::deletePageEntry(int page)
 
 /* Hash Page Table functions --------------------------------------------------*/
 
-void InitializePageTable(PageTableBucket **table, int num_buckets)
+void initializePageTable(PageTableBucket **table, int num_buckets)
 {
     *table = new PageTableBucket[num_buckets];
 }
 
-void DeletePageTable(PageTableBucket *table, int size)
+void deletePageTable(PageTableBucket *table, int size)
 {
     for (int i = 0; i < size; i++)
     {
@@ -136,9 +136,9 @@ void DeletePageTable(PageTableBucket *table, int size)
     delete [] table;
 }
 
-void InsertEntryToPageTable(PageTableBucket *table, int page, int frame, bool modified, bool referenced, int buckets)
+void insertEntryToPageTable(PageTableBucket *table, int page, int frame, bool modified, bool referenced, int buckets)
 {
-    int hashcode = PageHashcode(page, buckets);
+    int hashcode = pageHashcode(page, buckets);
 
     PageTableEntry new_entry;
     new_entry.set(page, frame, modified, referenced);
@@ -146,14 +146,14 @@ void InsertEntryToPageTable(PageTableBucket *table, int page, int frame, bool mo
     table[hashcode].insertEntry(new_entry);
 }
 
-PageTableEntry* GetPageTableEntry(PageTableBucket *table, int page, int buckets)
+PageTableEntry* getPageTableEntry(PageTableBucket *table, int page, int buckets)
 {
-    int hashcode = PageHashcode(page, buckets);
+    int hashcode = pageHashcode(page, buckets);
     return table[hashcode].getPageEntry(page);
 }
 
-void DeletePageTableEntry(PageTableBucket *table, int page, int buckets)
+void deletePageTableEntry(PageTableBucket *table, int page, int buckets)
 {
-    int hashcode = PageHashcode(page, buckets);
+    int hashcode = pageHashcode(page, buckets);
     table[hashcode].deletePageEntry(page);
 }
