@@ -3,7 +3,7 @@
 #include "page_table.hpp"
 #include "utils.hpp"
 
-using std::list;
+using std::forward_list;
 
 /* Page Table Entry functions -------------------------------------------------*/
 
@@ -36,8 +36,8 @@ void PageTableEntry::print()
 
 void PrintTableEntries(PageTableBucket *table, int buckets)
 {
-    list<PageTableEntry>::iterator itr;
-    list<PageTableEntry>::iterator end;
+    forward_list<PageTableEntry>::iterator itr;
+    forward_list<PageTableEntry>::iterator end;
     for (int i = 0; i < buckets; i++)
     {
         if (table[i].elements == NULL) { continue; }
@@ -58,11 +58,11 @@ PageTableEntry* PageTableBucket::getPageEntry(int page)
 {
     if (this->elements == NULL) { return NULL; }
 
-    list<PageTableEntry>::iterator itr;
-    list<PageTableEntry>::iterator end = this->elements->end();
+    forward_list<PageTableEntry>::iterator itr;
+    forward_list<PageTableEntry>::iterator end = elements->end();
 
     // Iterating over the entries list
-    for (itr = this->elements->begin(); itr != end; itr++)
+    for (itr = elements->begin(); itr != end; itr++)
     {
         if (itr->page_num == page)
         // If an entry for the specified page number is found,
@@ -81,34 +81,38 @@ void PageTableBucket::insertEntry(PageTableEntry entry)
     // Bucket is not initialized (elements list has not been created)
     {
         // Create the list
-        this->elements = new list<PageTableEntry>;
+        this->elements = new forward_list<PageTableEntry>;
     }
     // Having ensured the elements list exists, we insert the entry
-    this->elements->push_back(entry);
+    forward_list<PageTableEntry>::iterator itr;
+    forward_list<PageTableEntry>::iterator end = elements->end();
+    forward_list<PageTableEntry>::iterator prev = itr;
+
+    // Iterating over the entries list, and storing the last element
+    for (itr = elements->before_begin(); itr != end; itr++) { prev = itr; }
+    // Inserting after the last element
+    elements->insert_after(prev, entry);
 }
 
 void PageTableBucket::deletePageEntry(int page)
 {
     if (this->elements == NULL) { return; }
 
-    list<PageTableEntry>::iterator itr;
-    list<PageTableEntry>::iterator end = this->elements->end();
+    forward_list<PageTableEntry>::iterator itr;
+    forward_list<PageTableEntry>::iterator end = elements->end();
+    forward_list<PageTableEntry>::iterator prev = elements->before_begin();
 
     // Iterating over the entries list
-    for (itr = this->elements->begin(); itr != end; itr++)
+    for (itr = elements->begin(); itr != end; itr++)
     {
         if (itr->page_num == page)
         // If an entry for the specified page number is found,
         {
             // Remove it from the list
-            this->elements->erase(itr);
+            this->elements->erase_after(prev);
         }
+        prev = itr;
     }
-}
-
-inline bool PageTableBucket::empty()
-{
-    return ( (this->elements == NULL) || (this->elements->size() == 0));
 }
 
 /* Hash Page Table functions --------------------------------------------------*/

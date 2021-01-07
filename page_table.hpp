@@ -1,4 +1,5 @@
-#include <list>
+//#include <list>
+#include <forward_list>
 
 class PageTableEntry {
     /*
@@ -22,12 +23,12 @@ class PageTableEntry {
 
 class PageTableBucket {
     public:
-        std::list<PageTableEntry> *elements;
+        //std::list<PageTableEntry> *elements;
+        std::forward_list<PageTableEntry> *elements;
         PageTableBucket();
         PageTableEntry* getPageEntry(int page);
         void insertEntry(PageTableEntry entry);
         void deletePageEntry(int page);
-        bool empty();
 };
 
 /* Hash Page Table functions --------------------------------------------------*/

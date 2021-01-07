@@ -24,16 +24,19 @@ int main(int argc, char const *argv[])
 
     /* Declarations */
     ifstream finput;
+
     unsigned int page_num;
     unsigned int offset;
+    char action;
+
     PageTableBucket *page_table;
     char buffer[LINE_SIZE];
-    char action;
 
     /* This represents the frames in memory.
     Each element is either '0' (frame free) or '1' (frame not free).
     Using char type to limit each element size to 1 byte. */
     char* memory_frames = new char[FRAMES];
+    for (int i = 0; i < FRAMES; i++) { memory_frames[i] = '0'; }
 
     /* Opening File */
     finput.open(INPUT_FILE, ios::in);
@@ -70,6 +73,7 @@ int main(int argc, char const *argv[])
 
     // Releasing Resouces & Memory
     finput.close();
+    delete [] memory_frames;
     PrintTableEntries(page_table, PAGE_TABLE_BUCKETS);
     DeletePageTable(page_table, PAGE_TABLE_BUCKETS);
 
