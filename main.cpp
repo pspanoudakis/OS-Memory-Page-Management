@@ -98,9 +98,8 @@ void LRU_Main(ifstream &infile, PageTableBucket *page_table, char *memory_frames
 
 void secondChanceMain(ifstream &infile, PageTableBucket *page_table, char *memory_frames, const int num_frames)
 {
-
     int occupied_frames = 0;                        // This counts the occupied frames. It is meant to be modified by
-                                                    // The internal functions of the algorithm, not by main.
+                                                    // the internal functions of the algorithm, not by Main.
     char buffer[LINE_SIZE];                         // Buffer to initially place every trace text line
     // Extracted information from every trace is stored in these
     unsigned int page_num;
@@ -158,7 +157,8 @@ void secondChanceMain(ifstream &infile, PageTableBucket *page_table, char *memor
         disk_reads++;
         available_frame = secondChanceGetAvailableFrame(page_table, page_queue, memory_frames, 
                                                         occupied_frames, num_frames, disk_writes);
-        current_page_entry = insertEntryToPageTable(page_table, page_num, occupied_frames, (action == 'W'), true, PAGE_TABLE_BUCKETS);
+        current_page_entry = insertEntryToPageTable(page_table, page_num, occupied_frames, (action == 'W'),
+                                                    true, PAGE_TABLE_BUCKETS);
         memory_frames[available_frame] = '1';
         new_queue_entry.table_entry = current_page_entry;
         new_queue_entry.process_id = pid;
