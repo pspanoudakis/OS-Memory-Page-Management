@@ -82,16 +82,11 @@ void PageTableBucket::insertEntry(PageTableEntry entry)
     {
         // Create the list
         this->elements = new forward_list<PageTableEntry>;
+        elements->push_front(entry);
+        this->last = elements->begin();
+        return;
     }
-    // Having ensured the elements list exists, we insert the entry
-    forward_list<PageTableEntry>::iterator itr;
-    forward_list<PageTableEntry>::iterator end = elements->end();
-    forward_list<PageTableEntry>::iterator prev = itr;
-
-    // Iterating over the entries list, and storing the last element
-    for (itr = elements->before_begin(); itr != end; itr++) { prev = itr; }
-    // Inserting after the last element
-    elements->insert_after(prev, entry);
+    this->last = elements->insert_after(this->last, entry);
 }
 
 void PageTableBucket::deletePageEntry(int page)
@@ -106,9 +101,14 @@ void PageTableBucket::deletePageEntry(int page)
     for (itr = elements->begin(); itr != end; itr++)
     {
         if (itr->page_num == page)
-        // If an entry for the specified page number is found,
+        // If an entry for the specified page number is found, it will be removed
         {
-            // Remove it from the list
+            if (itr == this->last)
+            // If the entry was the last one, update the last entry iterator
+            {
+                this->last = prev;
+            }
+            // And remove the entry from the list
             elements->erase_after(prev);
             return;
         }

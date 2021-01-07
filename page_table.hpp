@@ -23,8 +23,8 @@ class PageTableEntry {
 
 class PageTableBucket {
     public:
-        //std::list<PageTableEntry> *elements;
         std::forward_list<PageTableEntry> *elements;
+        std::forward_list<PageTableEntry>::iterator last;
         PageTableBucket();
         PageTableEntry* getPageEntry(int page);
         void insertEntry(PageTableEntry entry);
@@ -40,6 +40,8 @@ void DeletePageTable(PageTableBucket *table, int size);
 void InsertEntryToPageTable(PageTableBucket *table, int page, int frame, bool modified, bool referenced, int buckets);
 
 PageTableEntry* GetPageTableEntry(PageTableBucket *table, int page, int buckets);
+
+void DeletePageTableEntry(PageTableBucket *table, int page, int buckets);
 
 // To be deleted---------------------------------------------------------------
 void PrintTableEntries(PageTableBucket *table, int buckets);

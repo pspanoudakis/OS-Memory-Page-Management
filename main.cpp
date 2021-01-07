@@ -74,6 +74,7 @@ int main(int argc, char const *argv[])
     // Releasing Resouces & Memory
     finput.close();
     delete [] memory_frames;
+    DeletePageTableEntry(page_table, 81758, PAGE_TABLE_BUCKETS);
     PrintTableEntries(page_table, PAGE_TABLE_BUCKETS);
     DeletePageTable(page_table, PAGE_TABLE_BUCKETS);
 
