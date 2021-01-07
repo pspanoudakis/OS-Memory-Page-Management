@@ -109,7 +109,8 @@ void PageTableBucket::deletePageEntry(int page)
         // If an entry for the specified page number is found,
         {
             // Remove it from the list
-            this->elements->erase_after(prev);
+            elements->erase_after(prev);
+            return;
         }
         prev = itr;
     }
