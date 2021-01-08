@@ -8,9 +8,9 @@
 class QueueEntry
 {
     public:
-    PageTableEntry* table_entry = NULL;
+    PageTableEntry* table_entry = nullptr;
     short process_id;
-    QueueEntry(PageTableEntry *page = NULL, short pid = -1);
+    QueueEntry(PageTableEntry *page = nullptr, short pid = -1);
 };
 
 int secondChanceGetAvailableFrame( PageTableBucket* page_table, std::deque<QueueEntry> &queue, char* memory_frames, 

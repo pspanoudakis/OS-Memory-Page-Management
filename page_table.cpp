@@ -28,7 +28,7 @@ void printTableEntries(PageTableBucket *table, int buckets)
     forward_list<PageTableEntry>::iterator end;
     for (int i = 0; i < buckets; i++)
     {
-        if (table[i].elements == NULL) { continue; }
+        if (table[i].elements == nullptr) { continue; }
         end = table[i].elements->end();
         // Iterating over the entries list
         for (itr = table[i].elements->begin(); itr != end; itr++)
@@ -40,11 +40,11 @@ void printTableEntries(PageTableBucket *table, int buckets)
 //-----------------------------------------------------------------
 
 /* Hash Page Table Bucket functions -------------------------------------------*/
-PageTableBucket::PageTableBucket(): elements(NULL) {}
+PageTableBucket::PageTableBucket(): elements(nullptr) {}
 
 PageTableEntry* PageTableBucket::getPageEntry(int page)
 {
-    if (this->elements == NULL) { return NULL; }
+    if (this->elements == nullptr) { return nullptr; }
 
     forward_list<PageTableEntry>::iterator itr;
     forward_list<PageTableEntry>::iterator end = elements->end();
@@ -60,12 +60,12 @@ PageTableEntry* PageTableBucket::getPageEntry(int page)
         }
     }
     // No Entry for the specified page number was found
-    return NULL;
+    return nullptr;
 }
 
 PageTableEntry* PageTableBucket::insertEntry(PageTableEntry entry)
 {
-    if (this->elements == NULL)
+    if (this->elements == nullptr)
     // Bucket is not initialized (elements list has not been created)
     {
         // Create the list
@@ -78,7 +78,7 @@ PageTableEntry* PageTableBucket::insertEntry(PageTableEntry entry)
 
 void PageTableBucket::deletePageEntry(int page)
 {
-    if (this->elements == NULL) { return; }
+    if (this->elements == nullptr) { return; }
 
     forward_list<PageTableEntry>::iterator itr;
     forward_list<PageTableEntry>::iterator end = elements->end();
@@ -114,7 +114,7 @@ void deletePageTable(PageTableBucket *table, int size)
 {
     for (int i = 0; i < size; i++)
     {
-        if (table[i].elements != NULL)
+        if (table[i].elements != nullptr)
         {
             table[i].elements->clear();
             delete table[i].elements;

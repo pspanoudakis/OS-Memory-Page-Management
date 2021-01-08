@@ -12,6 +12,6 @@ void extractTrace(char *buffer, char &action, unsigned int &page_number, unsigne
 void checkArgs(int argc, const char *argv[]);
 
 // To be deleted
-#define FRAMES 4
+#define FRAMES 150
 
 #endif

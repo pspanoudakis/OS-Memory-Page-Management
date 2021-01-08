@@ -15,9 +15,9 @@ using std::ifstream;
 using std::ios;
 using std::deque;
 
-//#define INPUT_FILE "traces/gcc.trace"
-#define INPUT_FILE "test.txt"
-#define PAGE_TABLE_BUCKETS 10
+#define INPUT_FILE "traces/gcc.trace"
+//#define INPUT_FILE "trace.txt"
+#define PAGE_TABLE_BUCKETS 300
 
 int disk_writes;
 int disk_reads;
@@ -124,7 +124,7 @@ void secondChanceMain(ifstream &infile, PageTableBucket *page_table, char *memor
         extractTrace(buffer, action, page_num, offset);
         
         current_page_entry = getPageTableEntry(page_table, page_num, PAGE_TABLE_BUCKETS);
-        if (current_page_entry != NULL)
+        if (current_page_entry != nullptr)
         // There is an entry for this page in the Page Table
         {
             if (current_page_entry->valid)

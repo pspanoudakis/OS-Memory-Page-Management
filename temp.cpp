@@ -52,7 +52,7 @@ int main(int argc, char const *argv[])
     while (finput.getline(buffer, LINE_SIZE))
     {
         cout << buffer << endl;
-        logical_address = strtol(buffer, NULL, 16);
+        logical_address = strtol(buffer, nullptr, 16);
         page_num = logical_address >> OFFSET_LENGTH;
         offset = logical_address << (ADDRESS_LENGTH - OFFSET_LENGTH); 
         offset = offset >> (ADDRESS_LENGTH - OFFSET_LENGTH);
