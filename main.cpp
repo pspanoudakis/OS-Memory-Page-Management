@@ -110,7 +110,6 @@ void secondChanceMain(ifstream &infile, PageTableBucket *page_table, char *memor
     unsigned int offset;
     char action;
     PageTableEntry *current_page_entry;
-    QueueEntry new_queue_entry;
     int available_frame;
     int pid;
 
@@ -158,9 +157,7 @@ void secondChanceMain(ifstream &infile, PageTableBucket *page_table, char *memor
                 memory_frames[available_frame] = '1';
 
                 // Maybe an insertPageToQueue function?
-                new_queue_entry.table_entry = current_page_entry;
-                new_queue_entry.process_id = pid;
-                page_queue.push_back(new_queue_entry);
+                insertPageToQueue(page_queue, current_page_entry, pid);
             }
             continue;
         }
@@ -172,9 +169,6 @@ void secondChanceMain(ifstream &infile, PageTableBucket *page_table, char *memor
                                                     true, PAGE_TABLE_BUCKETS);
         memory_frames[available_frame] = '1';
 
-        // Maybe an insertPageToQueue function?
-        new_queue_entry.table_entry = current_page_entry;
-        new_queue_entry.process_id = pid;
-        page_queue.push_back(new_queue_entry);
+        insertPageToQueue(page_queue, current_page_entry, pid);
     }
 }

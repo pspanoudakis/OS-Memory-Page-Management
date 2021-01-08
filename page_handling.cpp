@@ -6,6 +6,8 @@ using std::deque;
 
 #include "page_handling.hpp"
 
+QueueEntry::QueueEntry(PageTableEntry *page, short pid): table_entry(page), process_id(pid) {}
+
 int secondChanceGetAvailableFrame( PageTableBucket* page_table, deque<QueueEntry> &queue, char* memory_frames, 
                                    int& first_free_frame, const int total_frames, int &disk_writes)
 {
@@ -60,4 +62,9 @@ int secondChanceEvict(PageTableBucket* page_table, deque<QueueEntry> &queue, cha
             return free_frame;
         }        
     }
+}
+
+void insertPageToQueue(std::deque<QueueEntry> &queue, PageTableEntry *page, short pid)
+{
+    queue.push_back(QueueEntry(page, pid));
 }

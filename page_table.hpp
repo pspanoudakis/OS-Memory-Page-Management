@@ -9,9 +9,9 @@ class PageTableEntry {
         int frame_num;
         bool modified;
         bool referenced;
-        bool valid = true;
-        void set(int page, int frame, bool modified, bool referenced);
+        bool valid;
         void print();
+        PageTableEntry(int page, int frame, bool mod, bool ref, bool val = true);
 };
 
 class PageTableBucket {

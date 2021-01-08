@@ -7,21 +7,9 @@ using std::forward_list;
 
 /* Page Table Entry functions -------------------------------------------------*/
 
-void PageTableEntry::set(int page, int frame, bool modified, bool referenced)
-{
-    this->page_num = page;
-    this->frame_num = frame;
-    this->modified = modified;
-    this->referenced = referenced;
-}
+PageTableEntry::PageTableEntry(int page, int frame, bool mod, bool ref, bool val)
+: page_num(page), frame_num(frame), modified(mod), referenced(ref), valid(val) {}
 
-/*
-inline void PageTableEntry::markAsModified() { this->modified = true; }
-inline bool PageTableEntry::isModified() { return this->modified; }
-inline bool PageTableEntry::isReferenced() { return this->; }
-
-inline int PageTableEntry::pageNumber() { return page_num; }
-*/
 // To be deleted --------------------------------------------------------------
 #include <iostream>
 
@@ -139,10 +127,7 @@ PageTableEntry* insertEntryToPageTable(PageTableBucket *table, int page, int fra
 {
     int hashcode = pageHashcode(page, buckets);
 
-    PageTableEntry new_entry;
-    new_entry.set(page, frame, modified, referenced);
-
-    return table[hashcode].insertEntry(new_entry);
+    return table[hashcode].insertEntry(PageTableEntry(page, frame, modified, referenced));
 }
 
 PageTableEntry* getPageTableEntry(PageTableBucket *table, int page, int buckets)
