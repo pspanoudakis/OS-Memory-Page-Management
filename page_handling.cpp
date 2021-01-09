@@ -1,12 +1,21 @@
 #include "page_table.hpp"
 #include "utils.hpp"
 #include <deque>
+#include <list>
 
 using std::deque;
+using std::list;
 
 #include "page_handling.hpp"
 
 QueueEntry::QueueEntry(PageTableEntry *page, short pid): table_entry(page), process_id(pid) {}
+
+void insertPageToQueue(std::deque<QueueEntry> &queue, PageTableEntry *page, short pid)
+{
+    queue.push_back(QueueEntry(page, pid));
+}
+
+/* Functions used by Second Chance algorithm -------------------------------------------- */
 
 int secondChanceGetAvailableFrame( PageTableBucket* page_table, deque<QueueEntry> &queue, char* memory_frames, 
                                    int& first_free_frame, const int total_frames, int &disk_writes)
@@ -64,7 +73,77 @@ int secondChanceEvict(PageTableBucket* page_table, deque<QueueEntry> &queue, cha
     }
 }
 
-void insertPageToQueue(std::deque<QueueEntry> &queue, PageTableEntry *page, short pid)
+/* Functions used by LRU algorithm ------------------------------------------------------ */
+
+void insertPageToLookupTable(LRU_LookupBucket* lookup_table, int lookup_table_size, std::list<QueueEntry>::iterator &queue_entry)
 {
-    queue.push_back(QueueEntry(page, pid));
+    int hashcode = pageHashcode( (queue_entry->table_entry->page_num), lookup_table_size);
+    lookup_table[hashcode].elements.push_back(queue_entry);
+}
+
+void removeEntryFromLookupTable(LRU_LookupBucket* lookup_table, int lookup_table_size, QueueIteratorList::iterator &entry)
+{
+    int hashcode = pageHashcode( (*entry)->table_entry->page_num, lookup_table_size);
+    lookup_table[hashcode].elements.erase(entry);
+}
+
+/**
+ * 
+ */
+QueueIteratorList::iterator* getPageEntryInLookupTable(LRU_LookupBucket* lookup_table, 
+                                                       int lookup_table_size, PageTableEntry page, int pid)
+{
+    int hashcode = pageHashcode( page.page_num, lookup_table_size);
+    QueueIteratorList::iterator* itr = new QueueIteratorList::iterator();
+    *itr = lookup_table[hashcode].elements.begin();
+    QueueIteratorList::iterator end = lookup_table[hashcode].elements.end();
+
+    // itr is a pointer to an iterator of a bucket list
+    // *itr is an iterator which points to a bucket list node (an iterator as well)
+    // **itr is an iterator, which points to a node of the LRU queue
+    // ***itr is the node of the LRU queue
+
+    for (; *itr != end; itr++)
+    {
+        if ( (**itr)->table_entry->page_num == page.page_num )
+        {
+            if ( (**itr)->process_id == pid )
+            {
+                return itr;
+            }
+        }
+    }
+
+    // To indicate that an entry for the page was not found, 
+    // an iterator at the end of the *first bucket* is returned
+    *itr = lookup_table[0].elements.end();
+    return itr;
+}
+
+/**
+ * Moves the queue entry pointed by the specified iterator, to the front of the queue
+ * and updates the iterator to point to the moved entry properly. 
+ * 
+ * @param queue The queue to perform the operation to.
+ * @param lookup_entry A QueueIteratorList iterator. *lookup_entry is an iterator 
+ * which points to a node of the specified queue.
+ */
+void LRU_MoveFront(std::list<QueueEntry> &queue, QueueIteratorList::iterator &lookup_entry)
+{
+    queue.push_front( QueueEntry( (*lookup_entry)->table_entry, (*lookup_entry)->process_id ) );
+    queue.erase( (*lookup_entry));
+    (*lookup_entry) = queue.begin();
+}
+
+int LRU_GetAvailableFrame( PageTableBucket* page_table, std::list<QueueEntry> &queue, 
+                           LRU_LookupBucket* lookup_table, int lookup_table_size, 
+                           char* memory_frames, int& first_free_frame, const int total_frames, int &disk_writes)
+{
+    return 0;
+}
+
+int LRU_Evict(PageTableBucket* page_table, std::list<QueueEntry> &queue, LRU_LookupBucket* lookup_table, 
+              int lookup_table_size, char* memory_frames, int &disk_writes)
+{
+    return 0;
 }
