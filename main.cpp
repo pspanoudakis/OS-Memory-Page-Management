@@ -42,10 +42,10 @@ int main(int argc, char const *argv[])
     PageTableBucket *page_table;                    // The page table
 
     /* This represents the frames in memory.
-    Each element is either '0' (frame free) or '1' (frame not free).
+    Each element is either in FRAME_NOT_USED or FRAME_USED state.
     Using char type to limit each element size to 1 byte. */
     char* memory_frames = new char[frames];
-    for (int i = 0; i < FRAMES; i++) { memory_frames[i] = '0'; }
+    for (int i = 0; i < FRAMES; i++) { memory_frames[i] = FRAME_NOT_USED; }
 
     initializePageTable(&page_table, PAGE_TABLE_BUCKETS);
 
@@ -134,7 +134,7 @@ void secondChanceMain(ifstream &infile, PageTableBucket *page_table, char *memor
                 current_page_entry->referenced = true;
                 if ( !current_page_entry->modified )
                 {
-                    // If this is a write operation and the entry is not marked as modified, set the flag to true
+                    // If the page is not marked as modified, and this is a write operation, set the flag to true
                     current_page_entry->modified = (action == 'W');
                 }
             }
@@ -154,7 +154,7 @@ void secondChanceMain(ifstream &infile, PageTableBucket *page_table, char *memor
                 current_page_entry->modified = (action == 'W');
                 current_page_entry->referenced = true;
                 current_page_entry->valid = true;
-                memory_frames[available_frame] = '1';
+                memory_frames[available_frame] = FRAME_USED;
 
                 // Maybe an insertPageToQueue function?
                 insertPageToQueue(page_queue, current_page_entry, pid);
@@ -167,7 +167,7 @@ void secondChanceMain(ifstream &infile, PageTableBucket *page_table, char *memor
                                                         occupied_frames, num_frames, disk_writes);
         current_page_entry = insertEntryToPageTable(page_table, page_num, available_frame, (action == 'W'),
                                                     true, PAGE_TABLE_BUCKETS);
-        memory_frames[available_frame] = '1';
+        memory_frames[available_frame] = FRAME_USED;
 
         insertPageToQueue(page_queue, current_page_entry, pid);
     }

@@ -89,13 +89,13 @@ void removeEntryFromLookupTable(LRU_LookupBucket* lookup_table, int lookup_table
 
 /**
  * 
+ * 
  */
-QueueIteratorList::iterator* getPageEntryInLookupTable(LRU_LookupBucket* lookup_table, 
+QueueIteratorList::iterator getPageEntryInLookupTable(LRU_LookupBucket* lookup_table, 
                                                        int lookup_table_size, PageTableEntry page, int pid)
 {
     int hashcode = pageHashcode( page.page_num, lookup_table_size);
-    QueueIteratorList::iterator* itr = new QueueIteratorList::iterator();
-    *itr = lookup_table[hashcode].elements.begin();
+    QueueIteratorList::iterator itr = lookup_table[hashcode].elements.begin();
     QueueIteratorList::iterator end = lookup_table[hashcode].elements.end();
 
     // itr is a pointer to an iterator of a bucket list
@@ -103,11 +103,11 @@ QueueIteratorList::iterator* getPageEntryInLookupTable(LRU_LookupBucket* lookup_
     // **itr is an iterator, which points to a node of the LRU queue
     // ***itr is the node of the LRU queue
 
-    for (; *itr != end; itr++)
+    for (; itr != end; itr++)
     {
-        if ( (**itr)->table_entry->page_num == page.page_num )
+        if ( (*itr)->table_entry->page_num == page.page_num )
         {
-            if ( (**itr)->process_id == pid )
+            if ( (*itr)->process_id == pid )
             {
                 return itr;
             }
@@ -116,8 +116,7 @@ QueueIteratorList::iterator* getPageEntryInLookupTable(LRU_LookupBucket* lookup_
 
     // To indicate that an entry for the page was not found, 
     // an iterator at the end of the *first bucket* is returned
-    *itr = lookup_table[0].elements.end();
-    return itr;
+    return lookup_table[0].elements.end();
 }
 
 /**

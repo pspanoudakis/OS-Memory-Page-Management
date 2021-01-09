@@ -36,7 +36,7 @@ int secondChanceEvict(PageTableBucket* page_table, std::deque<QueueEntry> &queue
 
 void removeEntryFromLookupTable(LRU_LookupBucket* lookup_table, int lookup_table_size, QueueIteratorList::iterator &entry);
 
-QueueIteratorList::iterator* getPageEntryInLookupTable(LRU_LookupBucket* lookup_table, 
+QueueIteratorList::iterator getPageEntryInLookupTable(LRU_LookupBucket* lookup_table, 
                                                        int lookup_table_size, PageTableEntry page, int pid);
 
 void insertPageToLookupTable(LRU_LookupBucket* lookup_table, std::list<QueueEntry>::iterator &queue_entry);
