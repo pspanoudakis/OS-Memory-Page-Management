@@ -7,6 +7,9 @@
 
 #include "page_table.hpp"
 
+#define FRAME_USED '1'
+#define FRAME_NOT_USED '0'
+
 int pageHashcode(int page, unsigned long int mod);
 void extractTrace(char *buffer, char &action, unsigned int &page_number, unsigned int &offset);
 void checkArgs(int argc, const char *argv[]);
