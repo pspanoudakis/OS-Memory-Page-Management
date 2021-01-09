@@ -34,10 +34,11 @@ int pageHashcode(int page, unsigned long int mod)
 
 void extractTrace(char *buffer, char &action, unsigned int &page_number, unsigned int &offset)
 {
+    //cout << buffer << endl;
     long logical_address;
 
     action = buffer[LINE_SIZE - 2];
-    logical_address = strtol(buffer, NULL, 16);
+    logical_address = strtol(buffer, nullptr, 16);
     page_number = logical_address >> OFFSET_LENGTH;
     offset = logical_address << (ADDRESS_LENGTH - OFFSET_LENGTH); 
     offset = offset >> (ADDRESS_LENGTH - OFFSET_LENGTH);
