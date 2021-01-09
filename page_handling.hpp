@@ -30,7 +30,7 @@ void insertPageToQueue(std::deque<QueueEntry> &queue, PageTableEntry *page, shor
 int secondChanceGetAvailableFrame( PageTableBucket* page_table, std::deque<QueueEntry> &queue, char* memory_frames, 
                                    int& first_free_frame, const int total_frames, int &disk_writes);
 
-int secondChanceEvict(PageTableBucket* page_table, std::deque<QueueEntry> &queue, char* memory_frames, int &disk_writes);
+int secondChanceEvict(std::deque<QueueEntry> &queue, char* memory_frames, int &disk_writes);
 
 /* Functions used by LRU algorithm ------------------------------------------------------ */
 
@@ -43,11 +43,11 @@ void insertPageToLookupTable(LRU_LookupBucket* lookup_table, std::list<QueueEntr
 
 QueueIteratorList::iterator& getPageFromLookupTable(LRU_LookupBucket* lookup_table, int lookup_table_size, PageTableEntry page, int pid);
 
-int LRU_GetAvailableFrame( PageTableBucket* page_table, std::deque<QueueEntry> &queue, 
+int LRU_GetAvailableFrame( PageTableBucket* page_table, std::list<QueueEntry> &queue, 
                            LRU_LookupBucket* lookup_table, int lookup_table_size,
                            char* memory_frames, int& first_free_frame, const int total_frames, int &disk_writes);
 
-int LRU_Evict(PageTableBucket* page_table, std::deque<QueueEntry> &queue, LRU_LookupBucket* lookup_table, 
+int LRU_Evict(std::list<QueueEntry> &queue, LRU_LookupBucket* lookup_table, 
               int lookup_table_size, char* memory_frames, int &disk_writes);
 
 #endif
