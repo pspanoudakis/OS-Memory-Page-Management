@@ -16,8 +16,8 @@ using std::ios;
 using std::deque;
 using std::list;
 
-#define INPUT_FILE "traces/gcc.trace"
-//#define INPUT_FILE "input.txt"
+//#define INPUT_FILE "traces/gcc.trace"
+#define INPUT_FILE "input.txt"
 #define PAGE_TABLE_BUCKETS 300
 #define LRU_LOOKUP_BUCKETS 500
 
@@ -52,8 +52,8 @@ int main(int argc, char const *argv[])
     initializePageTable(&page_table, PAGE_TABLE_BUCKETS);
 
     // Call specified algorithm
-    //LRU_Main(finput, page_table, memory_frames, frames);
-    secondChanceMain(finput, page_table, memory_frames, frames);
+    LRU_Main(finput, page_table, memory_frames, frames);
+    //secondChanceMain(finput, page_table, memory_frames, frames);
 
     // Checking if the function exited unexpectedly
     if (!finput.eof())
