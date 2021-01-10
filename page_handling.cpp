@@ -91,6 +91,12 @@ int secondChanceEvict(deque<QueueEntry> &queue, char* memory_frames, int &disk_w
 
 /* Functions used by LRU algorithm ------------------------------------------------------ */
 
+list<QueueEntry>::iterator insertPageToLRUQueue(std::list<QueueEntry> &queue, PageTableEntry *page, short pid)
+{
+    queue.push_front( QueueEntry(page, pid) );
+    return queue.begin();
+}
+
 /**
  * 
  * 

@@ -34,14 +34,18 @@ int secondChanceEvict(std::deque<QueueEntry> &queue, char* memory_frames, int &d
 
 /* Functions used by LRU algorithm ------------------------------------------------------ */
 
+std::list<QueueEntry>::iterator insertPageToLRUQueue(std::list<QueueEntry> &queue, PageTableEntry *page, short pid);
+
 void removeEntryFromLookupTable(LRU_LookupBucket* lookup_table, int lookup_table_size, QueueIteratorList::iterator &entry);
 
 QueueIteratorList::iterator getPageEntryInLookupTable(LRU_LookupBucket* lookup_table, 
                                                        int lookup_table_size, PageTableEntry &page, short pid);
 
-void insertPageToLookupTable(LRU_LookupBucket* lookup_table, std::list<QueueEntry>::iterator &queue_entry);
+void insertPageToLookupTable(LRU_LookupBucket* lookup_table, int lookup_table_size, std::list<QueueEntry>::iterator &queue_entry);
 
 QueueIteratorList::iterator& getPageFromLookupTable(LRU_LookupBucket* lookup_table, int lookup_table_size, PageTableEntry page, short pid);
+
+void LRU_MoveFront(std::list<QueueEntry> &queue, QueueIteratorList::iterator &lookup_entry);
 
 int LRU_GetAvailableFrame( std::list<QueueEntry> &queue, LRU_LookupBucket* lookup_table, int lookup_table_size, 
                            char* memory_frames, int& first_free_frame, const int total_frames, int &disk_writes);
