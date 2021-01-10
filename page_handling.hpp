@@ -27,8 +27,8 @@ void insertPageToQueue(std::deque<QueueEntry> &queue, PageTableEntry *page, shor
 
 /* Functions used by Second Chance algorithm -------------------------------------------- */
 
-int secondChanceGetAvailableFrame( PageTableBucket* page_table, std::deque<QueueEntry> &queue, char* memory_frames, 
-                                   int& first_free_frame, const int total_frames, int &disk_writes);
+int secondChanceGetAvailableFrame(std::deque<QueueEntry> &queue, char* memory_frames, 
+                                  int& first_free_frame, const int total_frames, int &disk_writes);
 
 int secondChanceEvict(std::deque<QueueEntry> &queue, char* memory_frames, int &disk_writes);
 

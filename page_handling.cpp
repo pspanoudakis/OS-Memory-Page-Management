@@ -29,7 +29,7 @@ void insertPageToQueue(std::deque<QueueEntry> &queue, PageTableEntry *page, shor
  * 
  * 
  */
-int secondChanceGetAvailableFrame( PageTableBucket* page_table, deque<QueueEntry> &queue, char* memory_frames, 
+int secondChanceGetAvailableFrame( deque<QueueEntry> &queue, char* memory_frames, 
                                    int& first_free_frame, const int total_frames, int &disk_writes)
 {
     if (first_free_frame < total_frames)

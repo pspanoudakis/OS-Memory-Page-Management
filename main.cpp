@@ -16,8 +16,8 @@ using std::ios;
 using std::deque;
 using std::list;
 
-//#define INPUT_FILE "traces/gcc.trace"
-#define INPUT_FILE "input.txt"
+#define INPUT_FILE "traces/gcc.trace"
+//#define INPUT_FILE "input.txt"
 #define PAGE_TABLE_BUCKETS 300
 #define LRU_LOOKUP_BUCKETS 500
 
@@ -52,8 +52,8 @@ int main(int argc, char const *argv[])
     initializePageTable(&page_table, PAGE_TABLE_BUCKETS);
 
     // Call specified algorithm
-    LRU_Main(finput, page_table, memory_frames, frames);
-    //secondChanceMain(finput, page_table, memory_frames, frames);
+    //LRU_Main(finput, page_table, memory_frames, frames);
+    secondChanceMain(finput, page_table, memory_frames, frames);
 
     // Checking if the function exited unexpectedly
     if (!finput.eof())
@@ -205,7 +205,7 @@ void secondChanceMain(ifstream &infile, PageTableBucket *page_table, char *memor
             {
                 page_faults++;
                 // Find Empty frame to place it
-                available_frame = secondChanceGetAvailableFrame(page_table, page_queue, memory_frames, 
+                available_frame = secondChanceGetAvailableFrame(page_queue, memory_frames, 
                                                                 occupied_frames, num_frames, disk_writes);
 
                 // Retrieving from disk
@@ -225,7 +225,7 @@ void secondChanceMain(ifstream &infile, PageTableBucket *page_table, char *memor
         }
         page_faults++;
         disk_reads++;
-        available_frame = secondChanceGetAvailableFrame(page_table, page_queue, memory_frames, 
+        available_frame = secondChanceGetAvailableFrame(page_queue, memory_frames, 
                                                         occupied_frames, num_frames, disk_writes);
         current_page_entry = insertEntryToPageTable(page_table, page_num, available_frame, (action == 'W'),
                                                     true, PAGE_TABLE_BUCKETS);
