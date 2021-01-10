@@ -14,10 +14,12 @@ using std::endl;
 using std::ifstream;
 using std::ios;
 using std::deque;
+using std::list;
 
-#define INPUT_FILE "traces/gcc.trace"
-//#define INPUT_FILE "trace.txt"
+#define INPUT_FILE "traces/bzip.trace"
+//#define INPUT_FILE "input.txt"
 #define PAGE_TABLE_BUCKETS 300
+#define LRU_LOOKUP_BUCKETS 500
 
 int disk_writes;
 int disk_reads;
@@ -79,13 +81,23 @@ int main(int argc, char const *argv[])
 
 void LRU_Main(ifstream &infile, PageTableBucket *page_table, char *memory_frames, int num_frames)
 {
-    int first_free_frame = 0;                       // This will indicate the number of the first available frame
+    int occupied_frames = 0;                        // This counts the occupied frames. It is meant to be modified by
+                                                    // the internal functions of the algorithm, not by Main.
     char buffer[LINE_SIZE];                         // Buffer to initially place every trace text line
-
     // Extracted information from every trace is stored in these
     unsigned int page_num;
     unsigned int offset;
     char action;
+    PageTableEntry *current_page_entry;
+    int available_frame;
+    short pid = 0;
+
+    // All pages in memory will be stored here
+    list<QueueEntry> page_queue;
+    LRU_LookupBucket* lookup_table = new LRU_LookupBucket[LRU_LOOKUP_BUCKETS];
+    list<QueueEntry>::iterator queue_entry;
+    QueueIteratorList::iterator lookup_entry;
+
 
     while (infile.getline(buffer, LINE_SIZE) )
     {
@@ -94,10 +106,60 @@ void LRU_Main(ifstream &infile, PageTableBucket *page_table, char *memory_frames
 
         extractTrace(buffer, action, page_num, offset);
         
-        cout << buffer << endl;
+        current_page_entry = getPageTableEntry(page_table, page_num, PAGE_TABLE_BUCKETS);
+        if (current_page_entry != nullptr)
+        // There is an entry for this page in the Page Table
+        {
+            if (current_page_entry->valid)
+            // The entry is valid
+            {
+                // Update flags if needed
+                current_page_entry->referenced = true;
+                if ( !current_page_entry->modified )
+                {
+                    // If the page is not marked as modified, and this is a write operation, set the flag to true
+                    current_page_entry->modified = (action == 'W');
+                }
+                lookup_entry = getPageEntryInLookupTable(lookup_table, LRU_LOOKUP_BUCKETS, *current_page_entry, pid);
+                LRU_MoveFront(page_queue, lookup_entry);
+            }
+            else
+            // Page is stored in Page Table, but frame number is invalid, so the page is not present in memory
+            {
+                page_faults++;
+                // Find Empty frame to place it
+                available_frame = LRU_GetAvailableFrame(page_queue, lookup_table, LRU_LOOKUP_BUCKETS,
+                                                        memory_frames, occupied_frames, FRAMES, disk_writes);
 
-        insertEntryToPageTable(page_table, page_num, 666, (action == 'W'), true, PAGE_TABLE_BUCKETS);
+                // Retrieving from disk
+                disk_reads++;
+
+                // Updating the correspoding entry in page table
+                current_page_entry->frame_num = available_frame;
+                current_page_entry->modified = (action == 'W');
+                current_page_entry->referenced = true;
+                current_page_entry->valid = true;
+                memory_frames[available_frame] = FRAME_USED;
+
+                queue_entry = insertPageToLRUQueue(page_queue, current_page_entry, pid);
+                insertPageToLookupTable(lookup_table, LRU_LOOKUP_BUCKETS, queue_entry);
+            }
+            continue;
+        }
+        page_faults++;
+        disk_reads++;
+        available_frame = LRU_GetAvailableFrame(page_queue, lookup_table, LRU_LOOKUP_BUCKETS,
+                                                memory_frames, occupied_frames, num_frames, disk_writes);
+
+        current_page_entry = insertEntryToPageTable(page_table, page_num, available_frame, (action == 'W'),
+                                                    true, PAGE_TABLE_BUCKETS);
+        memory_frames[available_frame] = FRAME_USED;
+
+        queue_entry = insertPageToLRUQueue(page_queue, current_page_entry, pid);
+        insertPageToLookupTable(lookup_table, LRU_LOOKUP_BUCKETS, queue_entry);
     }
+
+    delete [] lookup_table;
 }
 
 void secondChanceMain(ifstream &infile, PageTableBucket *page_table, char *memory_frames, const int num_frames)
@@ -111,7 +173,7 @@ void secondChanceMain(ifstream &infile, PageTableBucket *page_table, char *memor
     char action;
     PageTableEntry *current_page_entry;
     int available_frame;
-    int pid;
+    short pid = 0;
 
     // All pages in memory will be stored here
     deque<QueueEntry> page_queue;
@@ -143,7 +205,7 @@ void secondChanceMain(ifstream &infile, PageTableBucket *page_table, char *memor
             {
                 page_faults++;
                 // Find Empty frame to place it
-                available_frame = secondChanceGetAvailableFrame(page_table, page_queue, memory_frames, 
+                available_frame = secondChanceGetAvailableFrame(page_queue, memory_frames, 
                                                                 occupied_frames, num_frames, disk_writes);
 
                 // Retrieving from disk
@@ -163,7 +225,7 @@ void secondChanceMain(ifstream &infile, PageTableBucket *page_table, char *memor
         }
         page_faults++;
         disk_reads++;
-        available_frame = secondChanceGetAvailableFrame(page_table, page_queue, memory_frames, 
+        available_frame = secondChanceGetAvailableFrame(page_queue, memory_frames, 
                                                         occupied_frames, num_frames, disk_writes);
         current_page_entry = insertEntryToPageTable(page_table, page_num, available_frame, (action == 'W'),
                                                     true, PAGE_TABLE_BUCKETS);

@@ -29,7 +29,7 @@ void insertPageToQueue(std::deque<QueueEntry> &queue, PageTableEntry *page, shor
  * 
  * 
  */
-int secondChanceGetAvailableFrame( PageTableBucket* page_table, deque<QueueEntry> &queue, char* memory_frames, 
+int secondChanceGetAvailableFrame( deque<QueueEntry> &queue, char* memory_frames, 
                                    int& first_free_frame, const int total_frames, int &disk_writes)
 {
     if (first_free_frame < total_frames)
@@ -55,7 +55,6 @@ int secondChanceEvict(deque<QueueEntry> &queue, char* memory_frames, int &disk_w
     int free_frame;
     deque<QueueEntry>::iterator current_entry;
     QueueEntry temp;
-    QueueEntry *victim_page;
 
     while (true)
     {
@@ -91,6 +90,12 @@ int secondChanceEvict(deque<QueueEntry> &queue, char* memory_frames, int &disk_w
 
 /* Functions used by LRU algorithm ------------------------------------------------------ */
 
+list<QueueEntry>::iterator insertPageToLRUQueue(std::list<QueueEntry> &queue, PageTableEntry *page, short pid)
+{
+    queue.push_front( QueueEntry(page, pid) );
+    return queue.begin();
+}
+
 /**
  * 
  * 
@@ -116,7 +121,7 @@ void removeEntryFromLookupTable(LRU_LookupBucket* lookup_table, int lookup_table
  * 
  */
 QueueIteratorList::iterator getPageEntryInLookupTable(LRU_LookupBucket* lookup_table, 
-                                                       int lookup_table_size, PageTableEntry page, int pid)
+                                                       int lookup_table_size, PageTableEntry &page, short pid)
 {
     int hashcode = pageHashcode( page.page_num, lookup_table_size);
     QueueIteratorList::iterator itr = lookup_table[hashcode].elements.begin();
@@ -160,8 +165,7 @@ void LRU_MoveFront(std::list<QueueEntry> &queue, QueueIteratorList::iterator &lo
 /**
  * 
  */
-int LRU_GetAvailableFrame( PageTableBucket* page_table, std::list<QueueEntry> &queue, 
-                           LRU_LookupBucket* lookup_table, int lookup_table_size, 
+int LRU_GetAvailableFrame( std::list<QueueEntry> &queue, LRU_LookupBucket* lookup_table, int lookup_table_size, 
                            char* memory_frames, int& first_free_frame, const int total_frames, int &disk_writes)
 {
     if (first_free_frame < total_frames)
@@ -184,6 +188,7 @@ int LRU_Evict(std::list<QueueEntry> &queue, LRU_LookupBucket* lookup_table,
               int lookup_table_size, char* memory_frames, int &disk_writes)
 {
     QueueEntry& victim = queue.back();
+    QueueIteratorList::iterator lookup_entry;
     int free_frame;
 
     if (victim.table_entry->modified)
@@ -193,6 +198,8 @@ int LRU_Evict(std::list<QueueEntry> &queue, LRU_LookupBucket* lookup_table,
 
     victim.table_entry->valid = false;
     free_frame = victim.table_entry->frame_num;
+    lookup_entry = getPageEntryInLookupTable(lookup_table, lookup_table_size, *(victim.table_entry), victim.process_id );
+    removeEntryFromLookupTable(lookup_table, lookup_table_size, lookup_entry);
     queue.pop_back();
     return free_frame;
 }
