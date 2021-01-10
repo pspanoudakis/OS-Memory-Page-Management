@@ -16,8 +16,8 @@ using std::ios;
 using std::deque;
 using std::list;
 
-#define INPUT_FILE "traces/gcc.trace"
-//#define INPUT_FILE "trace.txt"
+//#define INPUT_FILE "traces/gcc.trace"
+#define INPUT_FILE "input.txt"
 #define PAGE_TABLE_BUCKETS 300
 #define LRU_LOOKUP_BUCKETS 500
 
@@ -52,8 +52,8 @@ int main(int argc, char const *argv[])
     initializePageTable(&page_table, PAGE_TABLE_BUCKETS);
 
     // Call specified algorithm
-    //LRU_Main(finput, page_table, memory_frames, frames);
-    secondChanceMain(finput, page_table, memory_frames, frames);
+    LRU_Main(finput, page_table, memory_frames, frames);
+    //secondChanceMain(finput, page_table, memory_frames, frames);
 
     // Checking if the function exited unexpectedly
     if (!finput.eof())
@@ -90,7 +90,7 @@ void LRU_Main(ifstream &infile, PageTableBucket *page_table, char *memory_frames
     char action;
     PageTableEntry *current_page_entry;
     int available_frame;
-    int pid;
+    short pid = 0;
 
     // All pages in memory will be stored here
     list<QueueEntry> page_queue;
@@ -158,6 +158,8 @@ void LRU_Main(ifstream &infile, PageTableBucket *page_table, char *memory_frames
         queue_entry = insertPageToLRUQueue(page_queue, current_page_entry, pid);
         insertPageToLookupTable(lookup_table, LRU_LOOKUP_BUCKETS, queue_entry);
     }
+
+    delete [] lookup_table;
 }
 
 void secondChanceMain(ifstream &infile, PageTableBucket *page_table, char *memory_frames, const int num_frames)
@@ -171,7 +173,7 @@ void secondChanceMain(ifstream &infile, PageTableBucket *page_table, char *memor
     char action;
     PageTableEntry *current_page_entry;
     int available_frame;
-    int pid;
+    short pid = 0;
 
     // All pages in memory will be stored here
     deque<QueueEntry> page_queue;

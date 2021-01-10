@@ -55,7 +55,6 @@ int secondChanceEvict(deque<QueueEntry> &queue, char* memory_frames, int &disk_w
     int free_frame;
     deque<QueueEntry>::iterator current_entry;
     QueueEntry temp;
-    QueueEntry *victim_page;
 
     while (true)
     {
