@@ -29,8 +29,9 @@ void insertPageToQueue(std::deque<QueueEntry> &queue, PageTableEntry *page, shor
  * 
  * 
  */
-int secondChanceGetAvailableFrame( deque<QueueEntry> &queue, char* memory_frames, 
-                                   int& first_free_frame, const int total_frames, int &disk_writes)
+int secondChanceGetAvailableFrame(PageTableBucket* page_table, int page_table_buckets,
+                                  std::deque<QueueEntry> &queue, char* memory_frames, 
+                                  int& first_free_frame, const int total_frames, int &disk_writes)
 {
     if (first_free_frame < total_frames)
     // Free space available
@@ -41,7 +42,7 @@ int secondChanceGetAvailableFrame( deque<QueueEntry> &queue, char* memory_frames
     else
     // No free space available
     {
-        return secondChanceEvict(queue, memory_frames, disk_writes);     
+        return secondChanceEvict(page_table, page_table_buckets, queue, memory_frames, disk_writes);     
     }
 
 }
@@ -50,7 +51,8 @@ int secondChanceGetAvailableFrame( deque<QueueEntry> &queue, char* memory_frames
  * 
  * 
  */
-int secondChanceEvict(deque<QueueEntry> &queue, char* memory_frames, int &disk_writes)
+int secondChanceEvict(PageTableBucket* page_table, int page_table_buckets,
+                      std::deque<QueueEntry> &queue, char* memory_frames, int &disk_writes)
 {
     int free_frame;
     deque<QueueEntry>::iterator current_entry;
@@ -79,9 +81,10 @@ int secondChanceEvict(deque<QueueEntry> &queue, char* memory_frames, int &disk_w
                 disk_writes++;
             }
             // Page evicted
-            current_entry->table_entry->valid = false;
+            //current_entry->table_entry->valid = false;
             // The page is still in memory, but is about to be overwritten in main
             free_frame = current_entry->table_entry->frame_num;
+            deletePageTableEntry(page_table, current_entry->table_entry->page_num, page_table_buckets);
             queue.pop_front();
             return free_frame;
         }        
@@ -165,8 +168,9 @@ void LRU_MoveFront(std::list<QueueEntry> &queue, QueueIteratorList::iterator &lo
 /**
  * 
  */
-int LRU_GetAvailableFrame( std::list<QueueEntry> &queue, LRU_LookupBucket* lookup_table, int lookup_table_size, 
-                           char* memory_frames, int& first_free_frame, const int total_frames, int &disk_writes)
+int LRU_GetAvailableFrame(PageTableBucket* page_table, int page_table_buckets,
+                          std::list<QueueEntry> &queue, LRU_LookupBucket* lookup_table, int lookup_table_size, 
+                          char* memory_frames, int& first_free_frame, const int total_frames, int &disk_writes)
 {
     if (first_free_frame < total_frames)
     // Free space available
@@ -177,14 +181,16 @@ int LRU_GetAvailableFrame( std::list<QueueEntry> &queue, LRU_LookupBucket* looku
     else
     // No free space available
     {
-        return LRU_Evict(queue, lookup_table, lookup_table_size, memory_frames, disk_writes);     
+        return LRU_Evict(page_table, page_table_buckets, queue,
+                         lookup_table, lookup_table_size, memory_frames, disk_writes);     
     }
 }
 
 /**
  * 
  */
-int LRU_Evict(std::list<QueueEntry> &queue, LRU_LookupBucket* lookup_table, 
+int LRU_Evict(PageTableBucket* page_table, int page_table_buckets,
+              std::list<QueueEntry> &queue, LRU_LookupBucket* lookup_table, 
               int lookup_table_size, char* memory_frames, int &disk_writes)
 {
     QueueEntry& victim = queue.back();
@@ -200,6 +206,7 @@ int LRU_Evict(std::list<QueueEntry> &queue, LRU_LookupBucket* lookup_table,
     free_frame = victim.table_entry->frame_num;
     lookup_entry = getPageEntryInLookupTable(lookup_table, lookup_table_size, *(victim.table_entry), victim.process_id );
     removeEntryFromLookupTable(lookup_table, lookup_table_size, lookup_entry);
+    deletePageTableEntry(page_table, victim.table_entry->page_num, page_table_buckets);
     queue.pop_back();
     return free_frame;
 }
