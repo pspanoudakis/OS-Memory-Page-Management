@@ -55,8 +55,8 @@ int main(int argc, char const *argv[])
     initializePageTables(page_table, PAGE_TABLE_BUCKETS);
 
     // Call specified algorithm
-    LRU_Main(input_files, page_table, memory_frames, frames, total_traces, traces_per_turn);
-    //secondChanceMain(input_files, page_table, memory_frames, frames, total_traces, traces_per_turn);
+    //LRU_Main(input_files, page_table, memory_frames, frames, total_traces, traces_per_turn);
+    secondChanceMain(input_files, page_table, memory_frames, frames, total_traces, traces_per_turn);
 
     cout << "Total Page Faults: " << page_faults <<endl;
     cout << "Total Disk Reads: " << disk_reads <<endl;
