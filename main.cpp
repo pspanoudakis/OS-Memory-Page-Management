@@ -32,7 +32,7 @@ void secondChanceMain(ifstream* infiles, PageTableBucket **page_table, char *mem
 int main(int argc, char const *argv[])
 {
     // Argument Checking
-    //checkArgs(argc, argv);
+    checkArgs(argc, argv);
     ifstream* input_files = new ifstream[2];
     input_files[0].open(INPUT_FILE_1, ios::in);
     input_files[1].open(INPUT_FILE_2, ios::in);

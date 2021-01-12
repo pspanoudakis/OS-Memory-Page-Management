@@ -62,7 +62,7 @@ void checkArgs(int argc, const char *argv[])
     {
         cerr << "Insufficient arguments." << endl;
     }
-    else if ( strcmp(argv[1], "lru") || (strcmp(argv[1], "2ch")) )
+    else if ( strcmp(argv[1], "lru") && strcmp(argv[1], "2ch") )
     {
         cerr << "Invalid Algorithm argument." << endl;
     }
