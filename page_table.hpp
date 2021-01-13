@@ -26,7 +26,7 @@ class PageTableBucket {
 
 /* Hash Page Table functions --------------------------------------------------*/
 
-void initializePageTable(PageTableBucket **table, int num_buckets);
+void initializePageTables(PageTableBucket **table, int num_buckets);
 
 void deletePageTable(PageTableBucket *table, int size);
 

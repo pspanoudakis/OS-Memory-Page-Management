@@ -105,9 +105,10 @@ void PageTableBucket::deletePageEntry(int page)
 
 /* Hash Page Table functions --------------------------------------------------*/
 
-void initializePageTable(PageTableBucket **table, int num_buckets)
+void initializePageTables(PageTableBucket **table, int num_buckets)
 {
-    *table = new PageTableBucket[num_buckets];
+    table[0] = new PageTableBucket[num_buckets];
+    table[1] = new PageTableBucket[num_buckets];
 }
 
 void deletePageTable(PageTableBucket *table, int size)
