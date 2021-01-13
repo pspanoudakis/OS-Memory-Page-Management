@@ -26,8 +26,10 @@ int disk_writes = 0;
 int disk_reads = 0;
 int page_faults = 0;
 
-void LRU_Main(ifstream* infiles, PageTableBucket **page_table, char *memory_frames, int num_frames, int total_traces, int traces_per_turn);
-void secondChanceMain(ifstream* infiles, PageTableBucket **page_table, char *memory_frames, int num_frames, int total_traces, int traces_per_turn);
+void LRU_Main(ifstream* infiles, PageTableBucket **page_table, char *memory_frames,
+              unsigned int num_frames, unsigned int total_traces, unsigned int traces_per_turn);
+void secondChanceMain(ifstream* infiles, PageTableBucket **page_table, char *memory_frames,
+                      const unsigned int num_frames, unsigned int total_traces, unsigned int traces_per_turn);
 
 int main(int argc, char const *argv[])
 {
@@ -35,7 +37,7 @@ int main(int argc, char const *argv[])
     checkArgs(argc, argv);
 
     ifstream* input_files = new ifstream[2];
-    checkInputFiles(input_files, INPUT_FILE_1, INPUT_FILE_2);
+    initInputFiles(input_files, INPUT_FILE_1, INPUT_FILE_2);
     
     int frames = atoi(argv[2]);                            // To be extracted from argv
     int traces_per_turn = atoi(argv[3]);
@@ -86,18 +88,18 @@ int main(int argc, char const *argv[])
     return 0;
 }
 
-void LRU_Main(ifstream* infiles, PageTableBucket **page_table, char *memory_frames, int num_frames,
-              int total_traces, int traces_per_turn)
+void LRU_Main(ifstream* infiles, PageTableBucket **page_table, char *memory_frames,
+              unsigned int num_frames, unsigned int total_traces, unsigned int traces_per_turn)
 {
-    int occupied_frames = 0;                        // This counts the occupied frames. It is meant to be modified by
-                                                    // the internal functions of the algorithm, not by Main.
-    char buffer[LINE_SIZE];                         // Buffer to initially place every trace text line
+    unsigned int occupied_frames = 0;                       // This counts the occupied frames. It is meant to be modified by
+                                                            // the internal functions of the algorithm, not by Main.
+    char buffer[LINE_SIZE];                                 // Buffer to initially place every trace text line
     // Extracted information from every trace is stored in these
     unsigned int page_num, offset;
     unsigned int read_traces = 0, current_turn_traces = 0;
     char action;
     PageTableEntry *current_page_entry;
-    int available_frame;
+    unsigned int available_frame;
     short pid = 0;
 
     // All pages in memory will be stored here
@@ -153,10 +155,10 @@ void LRU_Main(ifstream* infiles, PageTableBucket **page_table, char *memory_fram
     delete [] lookup_table;
 }
 
-void secondChanceMain(ifstream* infiles, PageTableBucket **page_table, char *memory_frames, const int num_frames,
-                      int total_traces, int traces_per_turn)
+void secondChanceMain(ifstream* infiles, PageTableBucket **page_table, char *memory_frames,
+                      const unsigned int num_frames, unsigned int total_traces, unsigned int traces_per_turn)
 {
-    int occupied_frames = 0;                        // This counts the occupied frames. It is meant to be modified by
+    unsigned int occupied_frames = 0;                        // This counts the occupied frames. It is meant to be modified by
                                                     // the internal functions of the algorithm, not by Main.
     char buffer[LINE_SIZE];                         // Buffer to initially place every trace text line
     // Extracted information from every trace is stored in these

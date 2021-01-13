@@ -29,9 +29,9 @@ void insertPageToQueue(std::deque<QueueEntry> &queue, PageTableEntry *page, shor
  * 
  * 
  */
-int secondChanceGetAvailableFrame(PageTableBucket** page_table, int page_table_buckets,
+int secondChanceGetAvailableFrame(PageTableBucket** page_table, unsigned int page_table_buckets,
                                   std::deque<QueueEntry> &queue, char* memory_frames, 
-                                  int& first_free_frame, const int total_frames, int &disk_writes)
+                                  unsigned int& first_free_frame, const unsigned int total_frames, int &disk_writes)
 {
     if (first_free_frame < total_frames)
     // Free space available
@@ -169,9 +169,9 @@ void LRU_MoveFront(std::list<QueueEntry> &queue, QueueIteratorList::iterator &lo
 /**
  * 
  */
-int LRU_GetAvailableFrame(PageTableBucket** page_table, int page_table_buckets,
-                          std::list<QueueEntry> &queue, LRU_LookupBucket* lookup_table, int lookup_table_size, 
-                          char* memory_frames, int& first_free_frame, const int total_frames, int &disk_writes)
+int LRU_GetAvailableFrame(PageTableBucket** page_table, unsigned int page_table_buckets,
+                          std::list<QueueEntry> &queue, LRU_LookupBucket* lookup_table, unsigned int lookup_table_size, 
+                          char* memory_frames, unsigned int& first_free_frame, const unsigned int total_frames, int &disk_writes)
 {
     if (first_free_frame < total_frames)
     // Free space available
@@ -190,9 +190,9 @@ int LRU_GetAvailableFrame(PageTableBucket** page_table, int page_table_buckets,
 /**
  * 
  */
-int LRU_Evict(PageTableBucket** page_table, int page_table_buckets,
+int LRU_Evict(PageTableBucket** page_table, unsigned int page_table_buckets,
               std::list<QueueEntry> &queue, LRU_LookupBucket* lookup_table, 
-              int lookup_table_size, char* memory_frames, int &disk_writes)
+              unsigned int lookup_table_size, char* memory_frames, int &disk_writes)
 {
     QueueEntry& victim = queue.back();
     QueueIteratorList::iterator lookup_entry;

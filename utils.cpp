@@ -12,6 +12,10 @@ using std::endl;
 using std::ifstream;
 using std::ios;
 
+/**
+ * Returns the hashcode for the specified page number.
+ * The hashcode is created using SHA. It is in range [0, mod)
+ */
 int pageHashcode(int page, unsigned long int mod)
 {
     int result;
@@ -55,7 +59,14 @@ void extractTrace(char *buffer, char &action, unsigned int &page_number, unsigne
     offset = offset >> (ADDRESS_LENGTH - OFFSET_LENGTH);
 }
 
-void checkInputFiles(ifstream *input_files, const char* path1, const char* path2)
+/**
+ * Opens the specified files using the given input file streams. 
+ * In case of an error, the execution will be terminated.
+ * @param input_files The array with the 2 input file streams.
+ * @param path1 The path of the file to open using the first ifstream.
+ * @param path2 The path of the file to open using the second ifstream.
+ */
+void initInputFiles(ifstream *input_files, const char* path1, const char* path2)
 {
     input_files[0].open(path1, ios::in);
     input_files[1].open(path2, ios::in);
