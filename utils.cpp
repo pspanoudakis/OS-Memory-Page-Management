@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <openssl/sha.h>
 #include <cstdlib>
 #include <cstring>
@@ -8,6 +9,8 @@
 using std::cout;
 using std::cerr;
 using std::endl;
+using std::ifstream;
+using std::ios;
 
 int pageHashcode(int page, unsigned long int mod)
 {
@@ -52,6 +55,16 @@ void extractTrace(char *buffer, char &action, unsigned int &page_number, unsigne
     offset = offset >> (ADDRESS_LENGTH - OFFSET_LENGTH);
 }
 
+void checkInputFiles(ifstream *input_files, const char* path1, const char* path2)
+{
+    input_files[0].open(path1, ios::in);
+    input_files[1].open(path2, ios::in);
+    if ( (!input_files[0]) || (!input_files[1]) ) {
+        cerr << "Unable to open specified files. Abort." << endl;
+        exit(EXIT_FAILURE); 
+    }
+}
+
 /**
  * Checks if the program has been called with valid parameters. In case of
  * an invalid parameter, the execution will stop.
@@ -85,5 +98,5 @@ void checkArgs(int argc, const char *argv[])
     cout << "./main <lru>/<2ch> <Number of Frames> <References per Process>" << endl;
     cout << "Optional args: <max total traces> (to be placed last)" << endl;
 
-        exit(EXIT_FAILURE);
+    exit(EXIT_FAILURE);
 }

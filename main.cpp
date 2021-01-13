@@ -33,17 +33,23 @@ int main(int argc, char const *argv[])
 {
     // Argument Checking
     checkArgs(argc, argv);
+
     ifstream* input_files = new ifstream[2];
-    input_files[0].open(INPUT_FILE_1, ios::in);
-    input_files[1].open(INPUT_FILE_2, ios::in);
-    if ( (!input_files[0]) || (!input_files[1]) ) {
-        cerr << "Unable to open specified files. Abort." << endl;
-        return 1; 
-    }
+    checkInputFiles(input_files, INPUT_FILE_1, INPUT_FILE_2);
     
-    int frames = FRAMES;                            // To be extracted from argv
-    int total_traces = TOTAL_TRACES;
-    int traces_per_turn = TURN_TRCES;
+    int frames = atoi(argv[2]);                            // To be extracted from argv
+    int traces_per_turn = atoi(argv[3]);
+    int total_traces;
+    if (argc > 4)
+    {
+        total_traces = atoi(argv[4]);
+    }
+    else
+    {
+        // This indicates that there is no limit for traces
+        total_traces = -1;
+    }    
+
     PageTableBucket **page_table = new PageTableBucket*[2];                    // The page tables are stored here
 
     /* This represents the frames in memory.
@@ -55,8 +61,14 @@ int main(int argc, char const *argv[])
     initializePageTables(page_table, PAGE_TABLE_BUCKETS);
 
     // Call specified algorithm
-    //LRU_Main(input_files, page_table, memory_frames, frames, total_traces, traces_per_turn);
-    secondChanceMain(input_files, page_table, memory_frames, frames, total_traces, traces_per_turn);
+    if (strcmp(argv[1], "lru") == 0)
+    {
+        LRU_Main(input_files, page_table, memory_frames, frames, total_traces, traces_per_turn);
+    }
+    else
+    {
+        secondChanceMain(input_files, page_table, memory_frames, frames, total_traces, traces_per_turn);
+    }
 
     cout << "Total Page Faults: " << page_faults <<endl;
     cout << "Total Disk Reads: " << disk_reads <<endl;
@@ -94,7 +106,7 @@ void LRU_Main(ifstream* infiles, PageTableBucket **page_table, char *memory_fram
     list<QueueEntry>::iterator queue_entry;
     QueueIteratorList::iterator lookup_entry;
 
-    while (infiles[pid].getline(buffer, LINE_SIZE) && (read_traces < total_traces))
+    while (infiles[pid].getline(buffer, LINE_SIZE) && (read_traces != total_traces))
     {
         // Checking if a line was shorter than expected
         if (strlen(buffer) + 1 < LINE_SIZE) { break; }
@@ -158,7 +170,7 @@ void secondChanceMain(ifstream* infiles, PageTableBucket **page_table, char *mem
     // All pages in memory will be stored here
     deque<QueueEntry> page_queue;
 
-    while ( infiles[pid].getline(buffer, LINE_SIZE) && (read_traces < total_traces) )
+    while ( infiles[pid].getline(buffer, LINE_SIZE) && (read_traces != total_traces) )
     {
         // Checking if a line was shorter than expected
         if (strlen(buffer) + 1 < LINE_SIZE) { break; }
