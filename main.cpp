@@ -12,24 +12,20 @@ using std::cout;
 using std::cerr;
 using std::endl;
 using std::ifstream;
-using std::ios;
 using std::deque;
 using std::list;
 
-#define INPUT_FILE_2 "traces/gcc.trace"
 #define INPUT_FILE_1 "traces/bzip.trace"
-//#define INPUT_FILE "input.txt"
+#define INPUT_FILE_2 "traces/gcc.trace"
 #define PAGE_TABLE_BUCKETS 100
 #define LRU_LOOKUP_BUCKETS 150
 
-int disk_writes = 0;
-int disk_reads = 0;
-int page_faults = 0;
+unsigned int disk_writes = 0, disk_reads = 0, page_faults = 0;
 
 void LRU_Main(ifstream* infiles, PageTableBucket **page_table, char *memory_frames,
-              unsigned int num_frames, unsigned int total_traces, unsigned int traces_per_turn);
+              unsigned int num_frames, const int total_traces, const unsigned int traces_per_turn);
 void secondChanceMain(ifstream* infiles, PageTableBucket **page_table, char *memory_frames,
-                      const unsigned int num_frames, unsigned int total_traces, unsigned int traces_per_turn);
+                      const unsigned int num_frames, const int total_traces, const unsigned int traces_per_turn);
 
 int main(int argc, char const *argv[])
 {
@@ -39,8 +35,8 @@ int main(int argc, char const *argv[])
     ifstream* input_files = new ifstream[2];
     initInputFiles(input_files, INPUT_FILE_1, INPUT_FILE_2);
     
-    int frames = atoi(argv[2]);                            // To be extracted from argv
-    int traces_per_turn = atoi(argv[3]);
+    const unsigned int frames = atoi(argv[2]);                            // To be extracted from argv
+    const unsigned int traces_per_turn = atoi(argv[3]);
     int total_traces;
     if (argc > 4)
     {
@@ -58,38 +54,33 @@ int main(int argc, char const *argv[])
     Each element is either in FRAME_NOT_USED or FRAME_USED state.
     Using char type to limit each element size to 1 byte. */
     char* memory_frames = new char[frames];
-    for (int i = 0; i < FRAMES; i++) { memory_frames[i] = FRAME_NOT_USED; }
+    for (unsigned int i = 0; i < frames; i++) { memory_frames[i] = FRAME_NOT_USED; }
 
     initializePageTables(page_table, PAGE_TABLE_BUCKETS);
+    printArgs(frames, traces_per_turn, total_traces);
 
     // Call specified algorithm
     if (strcmp(argv[1], "lru") == 0)
     {
+        cout << "Using LRU algorithm" << endl;
         LRU_Main(input_files, page_table, memory_frames, frames, total_traces, traces_per_turn);
     }
     else
     {
+        cout << "Using 2nd chance algorithm" << endl;
         secondChanceMain(input_files, page_table, memory_frames, frames, total_traces, traces_per_turn);
     }
 
-    cout << "Total Page Faults: " << page_faults <<endl;
-    cout << "Total Disk Reads: " << disk_reads <<endl;
-    cout << "Total Disk Write-Backs: " << disk_writes <<endl;
+    printStats(page_faults, disk_reads, disk_writes);
 
     // Releasing Resouces & Memory
-    input_files[0].close();
-    input_files[1].close();
-    delete [] input_files;
-    delete [] memory_frames;
-    deletePageTable(page_table[0], PAGE_TABLE_BUCKETS);
-    deletePageTable(page_table[1], PAGE_TABLE_BUCKETS);
-    delete [] page_table;
+    releaseResources(input_files, memory_frames, page_table, PAGE_TABLE_BUCKETS);
 
     return 0;
 }
 
 void LRU_Main(ifstream* infiles, PageTableBucket **page_table, char *memory_frames,
-              unsigned int num_frames, unsigned int total_traces, unsigned int traces_per_turn)
+              const unsigned int num_frames, const int total_traces, const unsigned int traces_per_turn)
 {
     unsigned int occupied_frames = 0;                       // This counts the occupied frames. It is meant to be modified by
                                                             // the internal functions of the algorithm, not by Main.
@@ -156,7 +147,7 @@ void LRU_Main(ifstream* infiles, PageTableBucket **page_table, char *memory_fram
 }
 
 void secondChanceMain(ifstream* infiles, PageTableBucket **page_table, char *memory_frames,
-                      const unsigned int num_frames, unsigned int total_traces, unsigned int traces_per_turn)
+                      const unsigned int num_frames, const int total_traces, const unsigned int traces_per_turn)
 {
     unsigned int occupied_frames = 0;                        // This counts the occupied frames. It is meant to be modified by
                                                     // the internal functions of the algorithm, not by Main.

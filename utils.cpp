@@ -111,3 +111,36 @@ void checkArgs(int argc, const char *argv[])
 
     exit(EXIT_FAILURE);
 }
+
+void printArgs(const unsigned int& frames, const unsigned int& traces_per_turn, int& total_traces)
+{
+    cout << "Number of Frames in Memory: " << frames << endl;
+    cout << "Traces to interchangeably read by every process: " << traces_per_turn << endl;
+    if (total_traces == -1)
+    {
+        cout << "No limit for total traces selected." << endl;
+    }
+    else
+    {
+        cout << "Total traces to read: " << total_traces << endl;
+    }    
+}
+
+void printStats(unsigned int& page_faults, unsigned int& disk_reads, unsigned int& disk_writes)
+{
+    cout << "------------------------------------" << endl;
+    cout << "Total Page Faults: " << page_faults <<endl;
+    cout << "Total Disk Reads: " << disk_reads <<endl;
+    cout << "Total Disk Write-Backs: " << disk_writes <<endl;
+}
+
+void releaseResources(std::ifstream* input_files, char* memory_frames, PageTableBucket** page_table, const unsigned int buckets)
+{
+    input_files[0].close();
+    input_files[1].close();
+    delete [] input_files;
+    delete [] memory_frames;
+    deletePageTable(page_table[0], buckets);
+    deletePageTable(page_table[1], buckets);
+    delete [] page_table;
+}
