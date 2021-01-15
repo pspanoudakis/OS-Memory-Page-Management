@@ -7,41 +7,23 @@ using std::forward_list;
 
 /* Page Table Entry functions -------------------------------------------------*/
 
+/**
+ * Constructs a Page Table Entry with the specified values & flags.
+ */
 PageTableEntry::PageTableEntry(int page, int frame, bool mod, bool ref, bool val)
 : page_num(page), frame_num(frame), modified(mod), referenced(ref), valid(val) {}
 
-// To be deleted --------------------------------------------------------------
-#include <iostream>
-
-void PageTableEntry::print()
-{
-    using std::cout;
-    using std::endl;
-    cout << "------------------------------------" << endl;
-    cout << "Page Number: " << page_num << endl;
-    cout << "Frame: " << frame_num << endl;
-}
-
-void printTableEntries(PageTableBucket *table, int buckets)
-{
-    forward_list<PageTableEntry>::iterator itr;
-    forward_list<PageTableEntry>::iterator end;
-    for (int i = 0; i < buckets; i++)
-    {
-        if (table[i].elements == nullptr) { continue; }
-        end = table[i].elements->end();
-        // Iterating over the entries list
-        for (itr = table[i].elements->begin(); itr != end; itr++)
-        {
-            itr->print();
-        }
-    }
-}
-//-----------------------------------------------------------------
-
 /* Hash Page Table Bucket functions -------------------------------------------*/
+
+/**
+ * Constructs a Page Table Bucket, with an uninitiallized entry list.
+ */
 PageTableBucket::PageTableBucket(): elements(nullptr) {}
 
+/**
+ * Returns the address of the bucket entry which is associated
+ * with the specified Page Number.
+ */
 PageTableEntry* PageTableBucket::getPageEntry(int page)
 {
     if (this->elements == nullptr) { return nullptr; }
@@ -63,6 +45,10 @@ PageTableEntry* PageTableBucket::getPageEntry(int page)
     return nullptr;
 }
 
+/**
+ * Inserts the specified entry to the bucket list.
+ * Note that no checking for duplicate entry takes place.
+ */
 PageTableEntry* PageTableBucket::insertEntry(PageTableEntry entry)
 {
     if (this->elements == nullptr)
@@ -76,6 +62,10 @@ PageTableEntry* PageTableBucket::insertEntry(PageTableEntry entry)
     return &(*last);
 }
 
+/**
+ * Deletes the entry associated with the specified page number.
+ * If there is no such entry, no changes are made.
+ */
 void PageTableBucket::deletePageEntry(int page)
 {
     if (this->elements == nullptr) { return; }
@@ -105,12 +95,18 @@ void PageTableBucket::deletePageEntry(int page)
 
 /* Hash Page Table functions --------------------------------------------------*/
 
+/**
+ * Initializes the Page Tables by creating their respective buckets.
+ */
 void initializePageTables(PageTableBucket **table, int num_buckets)
 {
     table[0] = new PageTableBucket[num_buckets];
     table[1] = new PageTableBucket[num_buckets];
 }
 
+/**
+ * Deletes the specified Hashed Page Table properly.
+ */
 void deletePageTable(PageTableBucket *table, int size)
 {
     for (int i = 0; i < size; i++)
@@ -124,6 +120,9 @@ void deletePageTable(PageTableBucket *table, int size)
     delete [] table;
 }
 
+/**
+ * Inserts a new entry in the Page Table, with all the specified values and flags.
+ */
 PageTableEntry* insertEntryToPageTable(PageTableBucket *table, int page, int frame, bool modified, bool referenced, int buckets)
 {
     int hashcode = pageHashcode(page, buckets);
@@ -131,12 +130,19 @@ PageTableEntry* insertEntryToPageTable(PageTableBucket *table, int page, int fra
     return table[hashcode].insertEntry(PageTableEntry(page, frame, modified, referenced));
 }
 
+/**
+ * Returns the address of the Page Table entry which is associated with the specified Page Number.
+ */
 PageTableEntry* getPageTableEntry(PageTableBucket *table, int page, int buckets)
 {
     int hashcode = pageHashcode(page, buckets);
     return table[hashcode].getPageEntry(page);
 }
 
+/**
+ * Removes the Page Table Entry which is associated with the specified Page Number.
+ * If such entry is not present, no changes are made.
+ */
 void deletePageTableEntry(PageTableBucket *table, int page, int buckets)
 {
     int hashcode = pageHashcode(page, buckets);
