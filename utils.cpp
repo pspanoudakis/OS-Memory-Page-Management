@@ -112,6 +112,9 @@ void checkArgs(int argc, const char *argv[])
     exit(EXIT_FAILURE);
 }
 
+/**
+ * Prints the execution options that have been selected from the user.
+ */
 void printArgs(const unsigned int& frames, const unsigned int& traces_per_turn, int& total_traces)
 {
     cout << "Number of Frames in Memory: " << frames << endl;
@@ -126,6 +129,9 @@ void printArgs(const unsigned int& frames, const unsigned int& traces_per_turn, 
     }    
 }
 
+/**
+ * Prints the total stats at the end of the execution.
+ */
 void printStats(unsigned int& page_faults, unsigned int& disk_reads, unsigned int& disk_writes)
 {
     cout << "------------------------------------" << endl;
@@ -134,6 +140,14 @@ void printStats(unsigned int& page_faults, unsigned int& disk_reads, unsigned in
     cout << "Total Disk Write-Backs: " << disk_writes <<endl;
 }
 
+/**
+ * @brief Releases resources and memory used by main.
+ * 
+ * @param input_files An array with the ifstreams used by the program
+ * @param memory_frames The "bitmap" with all the frames in memory
+ * @param page_table An array with the hashed page tables used
+ * @param buckets The number of buckets in the hash tables
+ */
 void releaseResources(std::ifstream* input_files, char* memory_frames, PageTableBucket** page_table, const unsigned int buckets)
 {
     input_files[0].close();
