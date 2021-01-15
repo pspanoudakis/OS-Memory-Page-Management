@@ -31,7 +31,7 @@ void insertPageToQueue(std::deque<QueueEntry> &queue, PageTableEntry *page, shor
  */
 int secondChanceGetAvailableFrame(PageTableBucket** page_table, unsigned int page_table_buckets,
                                   std::deque<QueueEntry> &queue, char* memory_frames, 
-                                  unsigned int& first_free_frame, const unsigned int total_frames, int &disk_writes)
+                                  unsigned int& first_free_frame, const unsigned int total_frames, unsigned int &disk_writes)
 {
     if (first_free_frame < total_frames)
     // Free space available
@@ -52,7 +52,7 @@ int secondChanceGetAvailableFrame(PageTableBucket** page_table, unsigned int pag
  * 
  */
 int secondChanceEvict(PageTableBucket** page_table, int page_table_buckets,
-                      std::deque<QueueEntry> &queue, char* memory_frames, int &disk_writes)
+                      std::deque<QueueEntry> &queue, char* memory_frames, unsigned int &disk_writes)
 {
     int free_frame;
     deque<QueueEntry>::iterator current_entry;
@@ -87,6 +87,7 @@ int secondChanceEvict(PageTableBucket** page_table, int page_table_buckets,
             deletePageTableEntry(page_table[current_entry->process_id], 
                                  current_entry->table_entry->page_num, page_table_buckets);
             queue.pop_front();
+            memory_frames[free_frame] = FRAME_NOT_USED;
             return free_frame;
         }        
     }
@@ -171,7 +172,7 @@ void LRU_MoveFront(std::list<QueueEntry> &queue, QueueIteratorList::iterator &lo
  */
 int LRU_GetAvailableFrame(PageTableBucket** page_table, unsigned int page_table_buckets,
                           std::list<QueueEntry> &queue, LRU_LookupBucket* lookup_table, unsigned int lookup_table_size, 
-                          char* memory_frames, unsigned int& first_free_frame, const unsigned int total_frames, int &disk_writes)
+                          char* memory_frames, unsigned int& first_free_frame, const unsigned int total_frames, unsigned int &disk_writes)
 {
     if (first_free_frame < total_frames)
     // Free space available
@@ -192,7 +193,7 @@ int LRU_GetAvailableFrame(PageTableBucket** page_table, unsigned int page_table_
  */
 int LRU_Evict(PageTableBucket** page_table, unsigned int page_table_buckets,
               std::list<QueueEntry> &queue, LRU_LookupBucket* lookup_table, 
-              unsigned int lookup_table_size, char* memory_frames, int &disk_writes)
+              unsigned int lookup_table_size, char* memory_frames, unsigned int &disk_writes)
 {
     QueueEntry& victim = queue.back();
     QueueIteratorList::iterator lookup_entry;
@@ -210,5 +211,6 @@ int LRU_Evict(PageTableBucket** page_table, unsigned int page_table_buckets,
     removeEntryFromLookupTable(lookup_table, lookup_table_size, lookup_entry);
     deletePageTableEntry(page_table[victim.process_id], victim.table_entry->page_num, page_table_buckets);
     queue.pop_back();
+    memory_frames[free_frame] = FRAME_NOT_USED;
     return free_frame;
 }
