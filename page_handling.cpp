@@ -1,3 +1,9 @@
+/**
+ * File: page_handling.cpp
+ * Pavlos Spanoudakis (sdi1800184)
+ * Contains implementations of replacement algorithm related class methods and functions.
+ */
+
 #include "page_table.hpp"
 #include "utils.hpp"
 #include <deque>
@@ -49,12 +55,14 @@ int secondChanceGetAvailableFrame(PageTableBucket** page_table, unsigned int pag
     if (first_free_frame < total_frames)
     // Free space available
     {
+        // Return the first available frame, after updating it.
         first_free_frame++;
         return first_free_frame - 1;
     }
     else
     // No free space available
     {
+        // Evict a page and return the number of the frame where it was stored
         return secondChanceEvict(page_table, page_table_buckets, queue, memory_frames, disk_writes);     
     }
 
@@ -102,10 +110,10 @@ int secondChanceEvict(PageTableBucket** page_table, int page_table_buckets,
             {
                 disk_writes++;
             }
-            // Page evicted
-            //current_entry->table_entry->valid = false;
-            // The page is still in memory, but is about to be overwritten in main
+            // Getting the frame number of the victim page
             free_frame = current_entry->table_entry->frame_num;
+            
+            // Evicting Page
             deletePageTableEntry(page_table[current_entry->process_id], 
                                  current_entry->table_entry->page_num, page_table_buckets);
             queue.pop_front();
@@ -162,6 +170,7 @@ void removeEntryFromLookupTable(LRU_LookupBucket* lookup_table, int lookup_table
 QueueIteratorList::iterator getPageEntryInLookupTable(LRU_LookupBucket* lookup_table, 
                                                        int lookup_table_size, PageTableEntry &page, short pid)
 {
+    // Getting hashcode to locate the bucket where the iterator can be stored
     int hashcode = pageHashcode( page.page_num, lookup_table_size);
     QueueIteratorList::iterator itr = lookup_table[hashcode].elements.begin();
     QueueIteratorList::iterator end = lookup_table[hashcode].elements.end();
@@ -170,19 +179,20 @@ QueueIteratorList::iterator getPageEntryInLookupTable(LRU_LookupBucket* lookup_t
     // *itr is an iterator, which points to a node of the LRU queue
     // **itr is the node of the LRU queue
 
+    // Iterating over the bucket list
     for (; itr != end; itr++)
     {
         if ( (*itr)->table_entry->page_num == page.page_num )
         {
             if ( (*itr)->process_id == pid )
-            {
+            {   // Iterator found
                 return itr;
             }
         }
     }
 
     // To indicate that an entry for the page was not found, 
-    // an iterator at the end of the *first bucket* is returned
+    // an iterator pointing after the end of the *first bucket* is returned
     return lookup_table[0].elements.end();
 }
 
@@ -196,8 +206,11 @@ QueueIteratorList::iterator getPageEntryInLookupTable(LRU_LookupBucket* lookup_t
  */
 void LRU_MoveFront(std::list<QueueEntry> &queue, QueueIteratorList::iterator &lookup_entry)
 {
+    // First, place a copy of the entry at the front
     queue.push_front( QueueEntry( (*lookup_entry)->table_entry, (*lookup_entry)->process_id ) );
+    // Remove the entry from the original position
     queue.erase( (*lookup_entry));
+    // Updating the iterator so that it remains valid
     (*lookup_entry) = queue.begin();
 }
 
@@ -225,12 +238,14 @@ int LRU_GetAvailableFrame(PageTableBucket** page_table, unsigned int page_table_
     if (first_free_frame < total_frames)
     // Free space available
     {
+        // Return the first available frame, after updating it.
         first_free_frame++;
         return first_free_frame - 1;
     }
     else
     // No free space available
     {
+        // Evict a page and return the number of the frame where it was stored
         return LRU_Evict(page_table, page_table_buckets, queue,
                          lookup_table, lookup_table_size, memory_frames, disk_writes);     
     }
@@ -255,17 +270,21 @@ int LRU_Evict(PageTableBucket** page_table, unsigned int page_table_buckets,
               std::list<QueueEntry> &queue, LRU_LookupBucket* lookup_table, 
               unsigned int lookup_table_size, char* memory_frames, unsigned int &disk_writes)
 {
+    // The victim page is the one at the back of the queue
     QueueEntry& victim = queue.back();
     QueueIteratorList::iterator lookup_entry;
     int free_frame;
 
     if (victim.table_entry->modified)
     {
+        // Writing back to disk if dirty bit is set
         disk_writes++;
     }
 
-    victim.table_entry->valid = false;
+    // Getting the frame number of the victim page
     free_frame = victim.table_entry->frame_num;
+
+    // Evicting the page
     lookup_entry = getPageEntryInLookupTable(lookup_table, lookup_table_size, 
                                              *(victim.table_entry), victim.process_id );
     removeEntryFromLookupTable(lookup_table, lookup_table_size, lookup_entry);

@@ -1,3 +1,9 @@
+/**
+ * File: utils.cpp
+ * Pavlos Spanoudakis (sdi1800184)
+ * Contains implementations of useful routines used throughout the execution.
+ */
+
 #include <iostream>
 #include <fstream>
 #include <openssl/sha.h>
@@ -49,12 +55,15 @@ int pageHashcode(int page, unsigned long int mod)
  */
 void extractTrace(char *buffer, char &action, unsigned int &page_number, unsigned int &offset)
 {
-    //cout << buffer << endl;
     long logical_address;
 
+    // Storing action type ('R' for read or 'W' for write)
     action = buffer[LINE_SIZE - 2];
+    // Getting the complete logical address
     logical_address = strtol(buffer, nullptr, 16);
+    // Getting the Page Number by shifting
     page_number = logical_address >> OFFSET_LENGTH;
+    // Getting the offset with a similar technique
     offset = logical_address << (ADDRESS_LENGTH - OFFSET_LENGTH); 
     offset = offset >> (ADDRESS_LENGTH - OFFSET_LENGTH);
 }

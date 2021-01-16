@@ -1,3 +1,10 @@
+/**
+ * File: main.cpp
+ * Pavlos Spanoudakis (sdi1800184)
+ * Contains the main client function, as well as the main functions
+ * for LRU and Second Chance algorithms.
+ */
+
 #include <iostream>
 #include <deque>
 #include <fstream>
