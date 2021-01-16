@@ -134,7 +134,7 @@ void printArgs(const unsigned int& frames, const unsigned int& traces_per_turn, 
     }
     else
     {
-        cout << "Total traces to read: " << total_traces << endl;
+        cout << "Max traces to read: " << total_traces << endl;
     }    
 }
 
@@ -166,4 +166,17 @@ void releaseResources(std::ifstream* input_files, char* memory_frames, PageTable
     deletePageTable(page_table[0], buckets);
     deletePageTable(page_table[1], buckets);
     delete [] page_table;
+}
+
+/**
+ * Checks if EOF has been reached in one of the files.
+ * If this is not the case, an error message is displayed.
+ */
+void checkEOF(ifstream* inputFiles)
+{
+    if ( (inputFiles[0].eof()) || (inputFiles[1].eof()) ) { return; }
+    cerr << "------------------------------------" << endl;
+    cerr << "Unexpected line syntax found. The simulation will stop at this point." << endl;
+    cerr << "Each line must have an 8-digit hexadecimal number, a white space and a 'W'/'R' character," << endl;
+    cerr << "plus a newline character at the end (11 characters in total)." << endl;
 }
