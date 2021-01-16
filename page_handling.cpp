@@ -285,6 +285,7 @@ int LRU_Evict(PageTableBucket** page_table, unsigned int page_table_buckets,
     free_frame = victim.table_entry->frame_num;
 
     // Evicting the page
+    // Delete the entry for this page in LRU Queue and lookup hash table
     lookup_entry = getPageEntryInLookupTable(lookup_table, lookup_table_size, 
                                              *(victim.table_entry), victim.process_id );
     removeEntryFromLookupTable(lookup_table, lookup_table_size, lookup_entry);

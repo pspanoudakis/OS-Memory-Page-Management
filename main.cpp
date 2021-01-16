@@ -16,17 +16,15 @@
 #include "utils.hpp"
 
 using std::cout;
-using std::cerr;
 using std::endl;
 using std::ifstream;
-using std::deque;
-using std::list;
 
 #define INPUT_FILE_1 "traces/bzip.trace"
 #define INPUT_FILE_2 "traces/gcc.trace"
-#define PAGE_TABLE_BUCKETS 100
-#define LRU_LOOKUP_BUCKETS 150
+#define PAGE_TABLE_BUCKETS 50
+#define LRU_LOOKUP_BUCKETS 100
 
+// Counters for total statistics
 unsigned int disk_writes = 0, disk_reads = 0, page_faults = 0;
 
 void LRU_Main(ifstream* infiles, PageTableBucket **page_table, char *memory_frames,
@@ -39,12 +37,16 @@ int main(int argc, char const *argv[])
     // Argument Checking
     checkArgs(argc, argv);
 
+    // Opening input files
     ifstream* input_files = new ifstream[2];
     initInputFiles(input_files, INPUT_FILE_1, INPUT_FILE_2);
     
-    const unsigned int frames = atoi(argv[2]);                            // To be extracted from argv
+    // Getting number of memory frames
+    const unsigned int frames = atoi(argv[2]);
+    // Getting number of traces to interchangeably read by every process
     const unsigned int traces_per_turn = atoi(argv[3]);
     int total_traces;
+    // Getting number of traces to read in total
     if (argc > 4)
     {
         total_traces = atoi(argv[4]);
@@ -66,7 +68,7 @@ int main(int argc, char const *argv[])
     initializePageTables(page_table, PAGE_TABLE_BUCKETS);
     printArgs(frames, traces_per_turn, total_traces);
 
-    // Call specified algorithm
+    // Calling specified algorithm main
     if (strcmp(argv[1], "lru") == 0)
     {
         cout << "Using LRU algorithm" << endl;
@@ -86,31 +88,39 @@ int main(int argc, char const *argv[])
     return 0;
 }
 
+/**
+ * Main function for LRU algorithm. The skeleton is the same as the Second Chance main, 
+ * but different structures and page replacement functions are used.
+ */
 void LRU_Main(ifstream* infiles, PageTableBucket **page_table, char *memory_frames,
               const unsigned int num_frames, const int total_traces, const unsigned int traces_per_turn)
 {
-    unsigned int occupied_frames = 0;                       // This counts the occupied frames. It is meant to be modified by
-                                                            // the internal functions of the algorithm, not by Main.
-    char buffer[LINE_SIZE];                                 // Buffer to initially place every trace text line
-    // Extracted information from every trace is stored in these
-    unsigned int page_num, offset;
-    unsigned int read_traces = 0, current_turn_traces = 0;
+    unsigned int occupied_frames = 0;                           // This counts the occupied frames. It is meant to be modified by
+                                                                // the internal functions of the algorithm, not by Main.
+    char buffer[LINE_SIZE];                                     // Buffer to initially place every trace text line
+    
+    unsigned int page_num, offset;                              // Extracted information from every trace is stored in these
     char action;
-    PageTableEntry *current_page_entry;
-    unsigned int available_frame;
-    short pid = 0;
+    unsigned int read_traces = 0, current_turn_traces = 0;      // Counters for read traces
+    
+    PageTableEntry *current_page_entry;                         // Used for storing the Page Table Entry for the current page
+    unsigned int available_frame;                               // Keeps track of the first available frame, until all frames are used
+    short pid = 0;                                              // Keeps track of the current process
 
-    // All pages in memory will be stored here
-    list<QueueEntry> page_queue;
-    LRU_LookupBucket* lookup_table = new LRU_LookupBucket[LRU_LOOKUP_BUCKETS];
-    list<QueueEntry>::iterator queue_entry;
+    using std::list;
+
+    list<QueueEntry> page_queue;                                                // The LRU queue-like structure (implemented with a double-linked list)
+    LRU_LookupBucket* lookup_table = new LRU_LookupBucket[LRU_LOOKUP_BUCKETS];  // A hash table for quicker access to the queue entry for every page
+    list<QueueEntry>::iterator queue_entry;                                     // These are used for operations on the above structures
     QueueIteratorList::iterator lookup_entry;
 
+    // Reading traces until max traces reached or EOF found
     while (infiles[pid].getline(buffer, LINE_SIZE) && (read_traces != total_traces))
     {
-        // Checking if a line was shorter than expected
+        // If a line was shorter than expected, stop
         if (strlen(buffer) + 1 < LINE_SIZE) { break; }
 
+        // Extract the trace from the text line
         extractTrace(buffer, action, page_num, offset);
         
         current_page_entry = getPageTableEntry(page_table[pid], page_num, PAGE_TABLE_BUCKETS);
@@ -125,12 +135,15 @@ void LRU_Main(ifstream* infiles, PageTableBucket **page_table, char *memory_fram
                 current_page_entry->modified = (action == 'W');
             }
             lookup_entry = getPageEntryInLookupTable(lookup_table, LRU_LOOKUP_BUCKETS, *current_page_entry, pid);
+            // Move the LRU queue entry for this page back in front of the queue
             LRU_MoveFront(page_queue, lookup_entry);
         }
         else
+        // There is no entry for this page, so this is a page fault
         {
             page_faults++;
             disk_reads++;
+            
             available_frame = LRU_GetAvailableFrame(page_table, PAGE_TABLE_BUCKETS, page_queue, lookup_table, 
                                                     LRU_LOOKUP_BUCKETS, memory_frames, occupied_frames, num_frames, disk_writes);
 
@@ -138,43 +151,55 @@ void LRU_Main(ifstream* infiles, PageTableBucket **page_table, char *memory_fram
                                                         true, PAGE_TABLE_BUCKETS);
             memory_frames[available_frame] = FRAME_USED;
 
+            // Insert an entry for this page in the LRU queue
             queue_entry = insertPageToLRUQueue(page_queue, current_page_entry, pid);
             insertPageToLookupTable(lookup_table, LRU_LOOKUP_BUCKETS, queue_entry);
         }
         current_turn_traces++;
         if ( current_turn_traces == traces_per_turn )
+        // Properly changing between the 2 process when needed
         {
             current_turn_traces = 0;
             pid = (pid + 1) % 2;
         }
         read_traces++;
     }
-
     delete [] lookup_table;
+    // If the maximum number of traces has not been reached, then check if
+    // we have reached EOF in one of the files. If this is not the case, then 
+    // an unexpected line syntax has been detected.
+    if (read_traces != total_traces) { checkEOF(infiles); }
 }
 
+/**
+ * Main function for Second chance algorithm. The skeleton is the same as the LRU main, 
+ * but different structures and page replacement functions are used.
+ */
 void secondChanceMain(ifstream* infiles, PageTableBucket **page_table, char *memory_frames,
                       const unsigned int num_frames, const int total_traces, const unsigned int traces_per_turn)
 {
-    unsigned int occupied_frames = 0;                        // This counts the occupied frames. It is meant to be modified by
-                                                    // the internal functions of the algorithm, not by Main.
-    char buffer[LINE_SIZE];                         // Buffer to initially place every trace text line
-    // Extracted information from every trace is stored in these
-    unsigned int page_num, offset;
-    unsigned int read_traces = 0, current_turn_traces = 0;
+    unsigned int occupied_frames = 0;                           // This counts the occupied frames. It is meant to be modified by
+                                                                // the internal functions of the algorithm, not by Main.
+    char buffer[LINE_SIZE];                                     // Buffer to initially place every trace text line
+    
+    unsigned int page_num, offset;                              // Extracted information from every trace is stored in these
     char action;
-    PageTableEntry *current_page_entry;
-    int available_frame;
-    short pid = 0;
+    unsigned int read_traces = 0, current_turn_traces = 0;      // Counters for read traces
+    
+    PageTableEntry *current_page_entry;                         // Used for storing the Page Table Entry for the current page
+    int available_frame;                                        // Keeps track of the first available frame, until all frames are used
+    short pid = 0;                                              // Keeps track of the current process
 
-    // All pages in memory will be stored here
-    deque<QueueEntry> page_queue;
+    using std::deque;
+    deque<QueueEntry> page_queue;                               // The Second Chance queue (implemented with a double-ended queue)
 
+    // Reading traces until max traces reached or EOF found
     while ( infiles[pid].getline(buffer, LINE_SIZE) && (read_traces != total_traces) )
     {
-        // Checking if a line was shorter than expected
+        // If a line was shorter than expected, stop
         if (strlen(buffer) + 1 < LINE_SIZE) { break; }
 
+        // Extract the trace from the text line
         extractTrace(buffer, action, page_num, offset);
         
         current_page_entry = getPageTableEntry(page_table[pid], page_num, PAGE_TABLE_BUCKETS);
@@ -190,6 +215,7 @@ void secondChanceMain(ifstream* infiles, PageTableBucket **page_table, char *mem
             }
         }
         else
+        // There is no entry for this page, so this is a page fault
         {
             page_faults++;
             disk_reads++;
@@ -203,10 +229,15 @@ void secondChanceMain(ifstream* infiles, PageTableBucket **page_table, char *mem
         }
         current_turn_traces++;
         if ( current_turn_traces == traces_per_turn )
+        // Properly changing between the 2 process when needed
         {
             current_turn_traces = 0;
             pid = (pid + 1) % 2;
         }
         read_traces++;
-    }    
+    }
+    // If the maximum number of traces has not been reached, then check if
+    // we have reached EOF in one of the files. If this is not the case, then 
+    // an unexpected line syntax has been detected.
+    if (read_traces != total_traces) { checkEOF(infiles); }    
 }
