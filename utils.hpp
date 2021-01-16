@@ -24,7 +24,7 @@ void extractTrace(char *buffer, char &action, unsigned int &page_number, unsigne
 void initInputFiles(std::ifstream *input_files, const char* path1, const char* path2);
 void checkArgs(int argc, const char *argv[]);
 void printArgs(const unsigned int& frames, const unsigned int& traces_per_turn, int& total_traces);
-void printStats(unsigned int& page_faults, unsigned int& disk_reads, unsigned int& disk_writes);
+void printStats(unsigned int& page_faults, unsigned int& disk_reads, unsigned int& disk_writes, unsigned int& read_traces);
 void releaseResources(std::ifstream* input_files, char* memory_frames, PageTableBucket** page_table, const unsigned int buckets);
 void checkEOF(std::ifstream *input_files);
 

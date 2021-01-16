@@ -141,12 +141,13 @@ void printArgs(const unsigned int& frames, const unsigned int& traces_per_turn, 
 /**
  * Prints the total stats at the end of the execution.
  */
-void printStats(unsigned int& page_faults, unsigned int& disk_reads, unsigned int& disk_writes)
+void printStats(unsigned int& page_faults, unsigned int& disk_reads, unsigned int& disk_writes, unsigned int& read_traces)
 {
     cout << "------------------------------------" << endl;
-    cout << "Total Page Faults: " << page_faults <<endl;
-    cout << "Total Disk Reads: " << disk_reads <<endl;
-    cout << "Total Disk Write-Backs: " << disk_writes <<endl;
+    cout << "Total Read Traces: " << read_traces << endl;
+    cout << "Total Page Faults: " << page_faults << endl;
+    cout << "Total Disk Reads: " << disk_reads << endl;
+    cout << "Total Disk Write-Backs: " << disk_writes << endl;
 }
 
 /**

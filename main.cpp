@@ -27,10 +27,10 @@ using std::ifstream;
 // Counters for total statistics
 unsigned int disk_writes = 0, disk_reads = 0, page_faults = 0;
 
-void LRU_Main(ifstream* infiles, PageTableBucket **page_table, char *memory_frames,
-              unsigned int num_frames, const int total_traces, const unsigned int traces_per_turn);
-void secondChanceMain(ifstream* infiles, PageTableBucket **page_table, char *memory_frames,
+unsigned int LRU_Main(ifstream* infiles, PageTableBucket **page_table, char *memory_frames,
                       const unsigned int num_frames, const int total_traces, const unsigned int traces_per_turn);
+unsigned int secondChanceMain(ifstream* infiles, PageTableBucket **page_table, char *memory_frames,
+                              const unsigned int num_frames, const int total_traces, const unsigned int traces_per_turn);
 
 int main(int argc, char const *argv[])
 {
@@ -55,7 +55,9 @@ int main(int argc, char const *argv[])
     {
         // This indicates that there is no limit for traces
         total_traces = -1;
-    }    
+    }
+    // Number of read traces (in case no limit was specified)
+    unsigned int read_traces;
 
     PageTableBucket **page_table = new PageTableBucket*[2];                    // The page tables are stored here
 
@@ -72,15 +74,15 @@ int main(int argc, char const *argv[])
     if (strcmp(argv[1], "lru") == 0)
     {
         cout << "Using LRU algorithm" << endl;
-        LRU_Main(input_files, page_table, memory_frames, frames, total_traces, traces_per_turn);
+        read_traces = LRU_Main(input_files, page_table, memory_frames, frames, total_traces, traces_per_turn);
     }
     else
     {
         cout << "Using 2nd chance algorithm" << endl;
-        secondChanceMain(input_files, page_table, memory_frames, frames, total_traces, traces_per_turn);
+        read_traces = secondChanceMain(input_files, page_table, memory_frames, frames, total_traces, traces_per_turn);
     }
 
-    printStats(page_faults, disk_reads, disk_writes);
+    printStats(page_faults, disk_reads, disk_writes, read_traces);
 
     // Releasing Resouces & Memory
     releaseResources(input_files, memory_frames, page_table, PAGE_TABLE_BUCKETS);
@@ -92,8 +94,8 @@ int main(int argc, char const *argv[])
  * Main function for LRU algorithm. The skeleton is the same as the Second Chance main, 
  * but different structures and page replacement functions are used.
  */
-void LRU_Main(ifstream* infiles, PageTableBucket **page_table, char *memory_frames,
-              const unsigned int num_frames, const int total_traces, const unsigned int traces_per_turn)
+unsigned int LRU_Main(ifstream* infiles, PageTableBucket **page_table, char *memory_frames,
+                      const unsigned int num_frames, const int total_traces, const unsigned int traces_per_turn)
 {
     unsigned int occupied_frames = 0;                           // This counts the occupied frames. It is meant to be modified by
                                                                 // the internal functions of the algorithm, not by Main.
@@ -169,14 +171,15 @@ void LRU_Main(ifstream* infiles, PageTableBucket **page_table, char *memory_fram
     // we have reached EOF in one of the files. If this is not the case, then 
     // an unexpected line syntax has been detected.
     if (read_traces != total_traces) { checkEOF(infiles); }
+    return read_traces;
 }
 
 /**
  * Main function for Second chance algorithm. The skeleton is the same as the LRU main, 
  * but different structures and page replacement functions are used.
  */
-void secondChanceMain(ifstream* infiles, PageTableBucket **page_table, char *memory_frames,
-                      const unsigned int num_frames, const int total_traces, const unsigned int traces_per_turn)
+unsigned int secondChanceMain(ifstream* infiles, PageTableBucket **page_table, char *memory_frames,
+                              const unsigned int num_frames, const int total_traces, const unsigned int traces_per_turn)
 {
     unsigned int occupied_frames = 0;                           // This counts the occupied frames. It is meant to be modified by
                                                                 // the internal functions of the algorithm, not by Main.
@@ -239,5 +242,6 @@ void secondChanceMain(ifstream* infiles, PageTableBucket **page_table, char *mem
     // If the maximum number of traces has not been reached, then check if
     // we have reached EOF in one of the files. If this is not the case, then 
     // an unexpected line syntax has been detected.
-    if (read_traces != total_traces) { checkEOF(infiles); }    
+    if (read_traces != total_traces) { checkEOF(infiles); }
+    return read_traces;
 }
