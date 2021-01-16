@@ -1,5 +1,6 @@
 CC = g++
 
+CXXFLAGS = -std=c++11
 LDFLAGS = -lcrypto
 
 TARGET = main
