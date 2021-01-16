@@ -1,3 +1,10 @@
+/**
+ * File: utils.hpp
+ * Pavlos Spanoudakis (sdi1800184)
+ * Header file for useful routines used throughout the execution.
+ * Also contains several #define'd words used by the program.
+ */
+
 #ifndef UTILS_HPP
 #define UTILS_HPP
 
@@ -19,4 +26,5 @@ void checkArgs(int argc, const char *argv[]);
 void printArgs(const unsigned int& frames, const unsigned int& traces_per_turn, int& total_traces);
 void printStats(unsigned int& page_faults, unsigned int& disk_reads, unsigned int& disk_writes);
 void releaseResources(std::ifstream* input_files, char* memory_frames, PageTableBucket** page_table, const unsigned int buckets);
+
 #endif

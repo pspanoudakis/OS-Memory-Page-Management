@@ -1,3 +1,9 @@
+/**
+ * File: page_handling.hpp
+ * Pavlos Spanoudakis (sdi1800184)
+ * Contains definitions of replacement algorithm related classes and functions.
+ */
+
 #ifndef PAGE_HANDLING_HPP
 #define PAGE_HANDLING_HPP
 
@@ -6,21 +12,40 @@
 #include <deque>
 #include <list>
 
+/**
+ * Represents an Entry of the queue-like structure used by LRU and Second Chance algorithms.
+ */
 class QueueEntry
 {
     public:
-    PageTableEntry* table_entry = nullptr;
-    short process_id;
-    QueueEntry(PageTableEntry *page = nullptr, short pid = -1);
+    PageTableEntry* table_entry;                                            // Pointer to the Page Table entry for the page associated with this queue entry
+    short process_id;                                                       // The ID of the process that the page belongs to
+
+    QueueEntry(PageTableEntry *page = nullptr, short pid = -1);             // Constructor
 };
 
-// A QueueIteratorList is a list of iterators for a QueueEntry list.
+/**
+ * This is used for the LRU lookup table.
+ * A QueueIteratorList is a list of iterators for a QueueEntry list.
+ * Mostly used for readability.
+ */
 typedef std::list< std::list<QueueEntry>::iterator > QueueIteratorList;
 
+/**
+ * Represents a bucket of the LRU lookup table.
+ * 
+ * The LRU lookup table is a hash table, which stores QueueEntry iterators.
+ * The number of the bucket where each iterator is stored is the hashcode 
+ * of the page number associated with the QueueEntry pointed by the iterator.
+ * 
+ * Using the lookup table, we can locate the QueueEntry for a page more quickly,
+ * and since we are given an iterator that points to it, we can remove it from the queue
+ * in constant time.
+ */
 class LRU_LookupBucket
 {
     public:
-    QueueIteratorList elements;
+    QueueIteratorList elements;                                             // Contains just a double-linked list of QueueEntry iterators.
 };
 
 void insertPageToQueue(std::deque<QueueEntry> &queue, PageTableEntry *page, short pid);

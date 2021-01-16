@@ -1,3 +1,9 @@
+/**
+ * File: page_table.cpp
+ * Pavlos Spanoudakis (sdi1800184)
+ * Contains implementations of Page Table related class methods and functions.
+ */
+
 #include <list>
 #include <iterator>
 #include "page_table.hpp"
@@ -10,8 +16,8 @@ using std::forward_list;
 /**
  * Constructs a Page Table Entry with the specified values & flags.
  */
-PageTableEntry::PageTableEntry(int page, int frame, bool mod, bool ref, bool val)
-: page_num(page), frame_num(frame), modified(mod), referenced(ref), valid(val) {}
+PageTableEntry::PageTableEntry(int page, int frame, bool mod, bool ref)
+: page_num(page), frame_num(frame), modified(mod), referenced(ref) {}
 
 /* Hash Page Table Bucket functions -------------------------------------------*/
 
@@ -46,8 +52,10 @@ PageTableEntry* PageTableBucket::getPageEntry(int page)
 }
 
 /**
- * Inserts the specified entry to the bucket list.
+ * Inserts the specified entry to the bucket list. 
  * Note that no checking for duplicate entry takes place.
+ * 
+ * @returns The address of the inserted entry.
  */
 PageTableEntry* PageTableBucket::insertEntry(PageTableEntry entry)
 {
@@ -58,6 +66,7 @@ PageTableEntry* PageTableBucket::insertEntry(PageTableEntry entry)
         this->elements = new forward_list<PageTableEntry>;
         this->last = elements->before_begin();
     }
+    // Insert the new entry after the last one
     this->last = elements->insert_after(this->last, entry);
     return &(*last);
 }
@@ -111,8 +120,10 @@ void deletePageTable(PageTableBucket *table, int size)
 {
     for (int i = 0; i < size; i++)
     {
+        // Ignore uninitiallized buckets
         if (table[i].elements != nullptr)
         {
+            // Clear the bucket list and then delete it
             table[i].elements->clear();
             delete table[i].elements;
         }
@@ -125,8 +136,8 @@ void deletePageTable(PageTableBucket *table, int size)
  */
 PageTableEntry* insertEntryToPageTable(PageTableBucket *table, int page, int frame, bool modified, bool referenced, int buckets)
 {
+    // Getting the page number hashcode and inserting to the corresponding bucket
     int hashcode = pageHashcode(page, buckets);
-
     return table[hashcode].insertEntry(PageTableEntry(page, frame, modified, referenced));
 }
 
@@ -135,6 +146,7 @@ PageTableEntry* insertEntryToPageTable(PageTableBucket *table, int page, int fra
  */
 PageTableEntry* getPageTableEntry(PageTableBucket *table, int page, int buckets)
 {
+    // Getting the page number hashcode and searching in the corresponding bucket
     int hashcode = pageHashcode(page, buckets);
     return table[hashcode].getPageEntry(page);
 }
@@ -145,6 +157,7 @@ PageTableEntry* getPageTableEntry(PageTableBucket *table, int page, int buckets)
  */
 void deletePageTableEntry(PageTableBucket *table, int page, int buckets)
 {
+    // Getting the page number hashcode and delete from the corresponding bucket
     int hashcode = pageHashcode(page, buckets);
     table[hashcode].deletePageEntry(page);
 }
