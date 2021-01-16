@@ -7,3 +7,4 @@ main
 *.code-workspace
 *.txt
 traces/*
+samples/*
