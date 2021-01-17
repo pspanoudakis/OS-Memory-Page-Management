@@ -27,5 +27,6 @@ void printArgs(const unsigned int& frames, const unsigned int& traces_per_turn, 
 void printStats(unsigned int& page_faults, unsigned int& disk_reads, unsigned int& disk_writes, unsigned int& read_traces);
 void releaseResources(std::ifstream* input_files, char* memory_frames, PageTableBucket** page_table, const unsigned int buckets);
 void checkEOF(std::ifstream *input_files);
+bool isPositiveNumber(const char* str);
 
 #endif
