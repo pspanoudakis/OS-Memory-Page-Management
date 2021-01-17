@@ -9,6 +9,7 @@
 #include <openssl/sha.h>
 #include <cstdlib>
 #include <cstring>
+#include <cerrno>
 
 #include "utils.hpp"
 
@@ -99,17 +100,17 @@ void checkArgs(int argc, const char *argv[])
     {
         cerr << "Invalid Algorithm argument." << endl;
     }
-    else if (atoi(argv[2]) <= 0)
+    else if (!isPositiveNumber(argv[2]))
     {
         cerr << "Invalid Number of frames. Make sure it is a positive integer." << endl;
     }
-    else if (atoi(argv[3]) <= 0)
+    else if (!isPositiveNumber(argv[3]))
     {
         cerr << "Invalid Number of traces to read per file turn. Make sure it is a positive integer." << endl;
     }
     else if (argc > 4)
     {
-        if ( atoi(argv[4]) > 0) { return; }
+        if (isPositiveNumber(argv[4])) { return; }
         cerr << "Invalid number of maximum traces to read in total. Make sure it is a positive integer." << endl;
     }
     else { return; }
@@ -180,4 +181,13 @@ void checkEOF(ifstream* inputFiles)
     cerr << "Unexpected line syntax found. The simulation will stop at this point." << endl;
     cerr << "Each line must have an 8-digit hexadecimal number, a white space and a 'W'/'R' character," << endl;
     cerr << "plus a newline character at the end (11 characters in total)." << endl;
+}
+
+/**
+ * Determines whether the given c-string represents a positive decimal number.
+ */
+bool isPositiveNumber(const char* str)
+{
+    char* endptr;    
+    return (strtol(str, &endptr, 10) > 0) && (*endptr == '\0');
 }
