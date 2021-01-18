@@ -33,7 +33,7 @@ int pageHashcode(int page, unsigned long int mod)
     unsigned long int hash_num;
 
     // Getting the hashcode
-    SHA1(data, 4, hash);
+    SHA1(data, sizeof(int), hash);
 
     // Copying part of it and storing it
     memcpy(&hash_num, hash, sizeof(unsigned long int));
