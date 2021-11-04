@@ -3,4 +3,5 @@ main
 .vscode/*
 *.code-workspace
 traces/*
-samples/temp.*
+samples/temp.cpp
+samples/temp.hpp
