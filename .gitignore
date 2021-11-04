@@ -1,10 +1,6 @@
-!*.cpp
-!*.hpp
-*.o
 temp
 main
 .vscode/*
 *.code-workspace
-*.txt
 traces/*
-samples/*
+samples/temp.*
