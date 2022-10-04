@@ -19,8 +19,8 @@ using std::cout;
 using std::endl;
 using std::ifstream;
 
-#define INPUT_FILE_1 "traces/bzip.trace"
-#define INPUT_FILE_2 "traces/gcc.trace"
+#define INPUT_FILE_1 "samples/bzip.trace"
+#define INPUT_FILE_2 "samples/gcc.trace"
 #define PAGE_TABLE_BUCKETS 50
 #define LRU_LOOKUP_BUCKETS 100
 
