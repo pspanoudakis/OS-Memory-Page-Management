@@ -8,9 +8,11 @@
 #include "utils.hpp"
 #include <deque>
 #include <list>
+#include <vector>
 
 using std::deque;
 using std::list;
+using std::vector;
 
 #include "page_handling.hpp"
 
@@ -36,7 +38,7 @@ void insertPageToQueue(std::deque<QueueEntry> &queue, PageTableEntry *page, shor
 /**
  * @brief Locates an available frame, using the Second Chance algorithm.
  * 
- * @param page_table The page tables of both processes. Both are needed since a page
+ * @param page_tables The page tables of both processes. Both are needed since a page
  * from either of them may be evicted.
  * @param page_table_buckets The number of buckets in the Hashed Page Tables
  * @param queue The Queue used by Second Chance
@@ -48,8 +50,8 @@ void insertPageToQueue(std::deque<QueueEntry> &queue, PageTableEntry *page, shor
  * 
  * @returns The number of the available frame.
  */
-int secondChanceGetAvailableFrame(PageTableBucket** page_table, unsigned int page_table_buckets,
-                                  std::deque<QueueEntry> &queue, char* memory_frames, 
+int secondChanceGetAvailableFrame(vector<PageTableBucket*> &page_tables, unsigned int page_table_buckets,
+                                  deque<QueueEntry> &queue, char* memory_frames, 
                                   unsigned int& first_free_frame, const unsigned int total_frames, unsigned int &disk_writes)
 {
     if (first_free_frame < total_frames)
@@ -63,7 +65,7 @@ int secondChanceGetAvailableFrame(PageTableBucket** page_table, unsigned int pag
     // No free space available
     {
         // Evict a page and return the number of the frame where it was stored
-        return secondChanceEvict(page_table, page_table_buckets, queue, memory_frames, disk_writes);     
+        return secondChanceEvict(page_tables, page_table_buckets, queue, memory_frames, disk_writes);     
     }
 
 }
@@ -71,7 +73,7 @@ int secondChanceGetAvailableFrame(PageTableBucket** page_table, unsigned int pag
 /**
  * @brief Evicts a Page which is present in Memory, using the Second Chance algorithm.
  * 
- * @param page_table The page tables of both processes. Both are needed since a page
+ * @param page_tables The page tables of both processes. Both are needed since a page
  * from either of them may be evicted.
  * @param page_table_buckets The number of buckets in the Hashed Page Tables
  * @param queue The Queue used by Second Chance
@@ -81,7 +83,7 @@ int secondChanceGetAvailableFrame(PageTableBucket** page_table, unsigned int pag
  * 
  * @returns The number of the memory frame which contained the evicted Page.
  */
-int secondChanceEvict(PageTableBucket** page_table, int page_table_buckets,
+int secondChanceEvict(vector<PageTableBucket*> &page_tables, int page_table_buckets,
                       std::deque<QueueEntry> &queue, char* memory_frames, unsigned int &disk_writes)
 {
     int free_frame;
@@ -114,7 +116,7 @@ int secondChanceEvict(PageTableBucket** page_table, int page_table_buckets,
             free_frame = current_entry->table_entry->frame_num;
             
             // Evicting Page
-            deletePageTableEntry(page_table[current_entry->process_id], 
+            deletePageTableEntry(page_tables[current_entry->process_id], 
                                  current_entry->table_entry->page_num, page_table_buckets);
             queue.pop_front();
             memory_frames[free_frame] = FRAME_NOT_USED;
@@ -134,7 +136,7 @@ int secondChanceEvict(PageTableBucket** page_table, int page_table_buckets,
  * 
  * @returns An iterator that points to the Queue node with the new entry.
  */
-list<QueueEntry>::iterator insertPageToLRUQueue(std::list<QueueEntry> &queue, PageTableEntry *page, short pid)
+list<QueueEntry>::iterator insertPageToLRUQueue(list<QueueEntry> &queue, PageTableEntry *page, short pid)
 {
     queue.push_front( QueueEntry(page, pid) );
     return queue.begin();
@@ -143,7 +145,7 @@ list<QueueEntry>::iterator insertPageToLRUQueue(std::list<QueueEntry> &queue, Pa
 /**
  * Adds a Lookup Table entry, which is associated with the speicified Queue Entry, using an iterator.
  */
-void insertPageToLookupTable(LRU_LookupBucket* lookup_table, int lookup_table_size, std::list<QueueEntry>::iterator &queue_entry)
+void insertPageToLookupTable(LRU_LookupBucket* lookup_table, int lookup_table_size, list<QueueEntry>::iterator &queue_entry)
 {
     int hashcode = pageHashcode( (queue_entry->table_entry->page_num), lookup_table_size);
     lookup_table[hashcode].elements.push_back(queue_entry);
@@ -204,7 +206,7 @@ QueueIteratorList::iterator getPageEntryInLookupTable(LRU_LookupBucket* lookup_t
  * @param lookup_entry A QueueIteratorList iterator. *lookup_entry is an iterator 
  * which points to a node of the specified queue.
  */
-void LRU_MoveFront(std::list<QueueEntry> &queue, QueueIteratorList::iterator &lookup_entry)
+void LRU_MoveFront(list<QueueEntry> &queue, QueueIteratorList::iterator &lookup_entry)
 {
     // First, place a copy of the entry at the front
     queue.push_front( QueueEntry( (*lookup_entry)->table_entry, (*lookup_entry)->process_id ) );
@@ -231,8 +233,8 @@ void LRU_MoveFront(std::list<QueueEntry> &queue, QueueIteratorList::iterator &lo
  * 
  * @returns The number of the available frame.
  */
-int LRU_GetAvailableFrame(PageTableBucket** page_table, unsigned int page_table_buckets,
-                          std::list<QueueEntry> &queue, LRU_LookupBucket* lookup_table, unsigned int lookup_table_size, 
+int LRU_GetAvailableFrame(vector<PageTableBucket*> &page_tables, unsigned int page_table_buckets,
+                          list<QueueEntry> &queue, LRU_LookupBucket* lookup_table, unsigned int lookup_table_size, 
                           char* memory_frames, unsigned int& first_free_frame, const unsigned int total_frames, unsigned int &disk_writes)
 {
     if (first_free_frame < total_frames)
@@ -246,7 +248,7 @@ int LRU_GetAvailableFrame(PageTableBucket** page_table, unsigned int page_table_
     // No free space available
     {
         // Evict a page and return the number of the frame where it was stored
-        return LRU_Evict(page_table, page_table_buckets, queue,
+        return LRU_Evict(page_tables, page_table_buckets, queue,
                          lookup_table, lookup_table_size, memory_frames, disk_writes);     
     }
 }
@@ -266,8 +268,8 @@ int LRU_GetAvailableFrame(PageTableBucket** page_table, unsigned int page_table_
  * 
  * @returns The number of the memory frame which contained the evicted Page.
  */
-int LRU_Evict(PageTableBucket** page_table, unsigned int page_table_buckets,
-              std::list<QueueEntry> &queue, LRU_LookupBucket* lookup_table, 
+int LRU_Evict(vector<PageTableBucket*> &page_tables, unsigned int page_table_buckets,
+              list<QueueEntry> &queue, LRU_LookupBucket* lookup_table, 
               unsigned int lookup_table_size, char* memory_frames, unsigned int &disk_writes)
 {
     // The victim page is the one at the back of the queue
@@ -289,7 +291,7 @@ int LRU_Evict(PageTableBucket** page_table, unsigned int page_table_buckets,
     lookup_entry = getPageEntryInLookupTable(lookup_table, lookup_table_size, 
                                              *(victim.table_entry), victim.process_id );
     removeEntryFromLookupTable(lookup_table, lookup_table_size, lookup_entry);
-    deletePageTableEntry(page_table[victim.process_id], victim.table_entry->page_num, page_table_buckets);
+    deletePageTableEntry(page_tables[victim.process_id], victim.table_entry->page_num, page_table_buckets);
     queue.pop_back();
     memory_frames[free_frame] = FRAME_NOT_USED;
     return free_frame;

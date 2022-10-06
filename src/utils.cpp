@@ -6,10 +6,11 @@
 
 #include <iostream>
 #include <fstream>
-#include <openssl/sha.h>
+#include <vector>
 #include <cstdlib>
 #include <cstring>
 #include <cerrno>
+#include <openssl/sha.h>
 
 #include "utils.hpp"
 
@@ -18,6 +19,7 @@ using std::cerr;
 using std::endl;
 using std::ifstream;
 using std::ios;
+using std::vector;
 
 /**
  * Returns the hashcode for the specified page number.
@@ -72,18 +74,29 @@ void extractTrace(char *buffer, char &action, unsigned int &page_number, unsigne
 /**
  * Opens the specified files using the given input file streams. 
  * In case of an error, the execution will be terminated.
- * @param input_files The array with the 2 input file streams.
- * @param path1 The path of the file to open using the first ifstream.
- * @param path2 The path of the file to open using the second ifstream.
+ * @param input_files The input file streams.
+ * @param file_paths The input file names.
  */
-void initInputFiles(ifstream *input_files, const char* path1, const char* path2)
+bool initInputFiles(vector<ifstream> &input_files, const vector<const char*> &file_paths)
 {
-    input_files[0].open(path1, ios::in);
-    input_files[1].open(path2, ios::in);
-    if ( (!input_files[0]) || (!input_files[1]) ) {
-        cerr << "Unable to open specified files. Abort." << endl;
-        exit(EXIT_FAILURE); 
+    if (input_files.size() != file_paths.size()) {
+        cerr << "Expected 1 input file per process. Abort." << endl;
+        return false;
     }
+    for (size_t i = 0; i < file_paths.size(); i++)
+    {
+        input_files[i].open(file_paths[i], ios::in);
+        if ( !input_files[i] ) {
+            cerr << "Unable to open file: '" << file_paths[i] << "'. Abort." << endl;
+            for (size_t j = 0; j < i; j++)
+            {
+                input_files[j].close();
+            }
+            return false;
+        }
+    }
+
+    return true;
 }
 
 /**
@@ -159,22 +172,24 @@ void printStats(unsigned int& page_faults, unsigned int& disk_reads, unsigned in
  * @param page_table An array with the hashed page tables used
  * @param buckets The number of buckets in the hash tables
  */
-void releaseResources(std::ifstream* input_files, char* memory_frames, PageTableBucket** page_table, const unsigned int buckets)
+void releaseResources(vector<ifstream> &infiles, char* memory_frames, vector<PageTableBucket*> &page_tables, const unsigned int buckets)
 {
-    input_files[0].close();
-    input_files[1].close();
-    delete [] input_files;
+    for (ifstream &stream : infiles)
+    {
+        stream.close();
+    }
     delete [] memory_frames;
-    deletePageTable(page_table[0], buckets);
-    deletePageTable(page_table[1], buckets);
-    delete [] page_table;
+    for (PageTableBucket* table : page_tables)
+    {
+        deletePageTable(table, buckets);
+    }
 }
 
 /**
  * Checks if EOF has been reached in one of the files.
  * If this is not the case, an error message is displayed.
  */
-void checkEOF(ifstream* inputFiles)
+void checkEOF(vector<ifstream> &inputFiles)
 {
     if ( (inputFiles[0].eof()) || (inputFiles[1].eof()) ) { return; }
     cerr << "------------------------------------" << endl;

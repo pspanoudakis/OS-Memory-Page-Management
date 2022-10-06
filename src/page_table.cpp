@@ -6,9 +6,11 @@
 
 #include <list>
 #include <iterator>
+#include <vector>
 #include "page_table.hpp"
 #include "utils.hpp"
 
+using std::vector;
 using std::forward_list;
 
 /* Page Table Entry functions -------------------------------------------------*/
@@ -107,10 +109,12 @@ void PageTableBucket::deletePageEntry(int page)
 /**
  * Initializes the Page Tables by creating their respective buckets.
  */
-void initializePageTables(PageTableBucket **table, int num_buckets)
+void initializePageTables(vector<PageTableBucket*> &page_tables, int num_buckets)
 {
-    table[0] = new PageTableBucket[num_buckets];
-    table[1] = new PageTableBucket[num_buckets];
+    for (PageTableBucket* &page_table : page_tables)
+    {
+        page_table = new PageTableBucket[num_buckets];
+    }
 }
 
 /**
