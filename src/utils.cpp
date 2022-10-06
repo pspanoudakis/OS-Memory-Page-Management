@@ -167,9 +167,9 @@ void printStats(unsigned int& page_faults, unsigned int& disk_reads, unsigned in
 /**
  * @brief Releases resources and memory used by main.
  * 
- * @param input_files An array with the ifstreams used by the program
+ * @param infiles The ifstreams used for each process
  * @param memory_frames The "bitmap" with all the frames in memory
- * @param page_table An array with the hashed page tables used
+ * @param page_tables The processes' page tables
  * @param buckets The number of buckets in the hash tables
  */
 void releaseResources(vector<ifstream> &infiles, char* memory_frames, vector<PageTableBucket*> &page_tables, const unsigned int buckets)
@@ -189,9 +189,14 @@ void releaseResources(vector<ifstream> &infiles, char* memory_frames, vector<Pag
  * Checks if EOF has been reached in one of the files.
  * If this is not the case, an error message is displayed.
  */
-void checkEOF(vector<ifstream> &inputFiles)
+void checkEOF(const vector<ifstream> &inputFiles)
 {
-    if ( (inputFiles[0].eof()) || (inputFiles[1].eof()) ) { return; }
+    for (const ifstream &stream : inputFiles)
+    {
+        if (stream.eof()) {
+            return;
+        }
+    }
     cerr << "------------------------------------" << endl;
     cerr << "Unexpected line syntax found. The simulation will stop at this point." << endl;
     cerr << "Each line must have an 8-digit hexadecimal number, a white space and a 'W'/'R' character," << endl;

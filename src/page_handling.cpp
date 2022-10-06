@@ -219,7 +219,7 @@ void LRU_MoveFront(list<QueueEntry> &queue, QueueIteratorList::iterator &lookup_
 /**
  * @brief Locates an available frame, using LRU algorithm.
  * 
- * @param page_table The page tables of both processes. Both are needed since a page
+ * @param page_tables The page tables of both processes. Both are needed since a page
  * from either of them may be evicted.
  * @param page_table_buckets The number of buckets in the Hashed Page Tables
  * @param queue The Queue used by LRU
@@ -256,7 +256,7 @@ int LRU_GetAvailableFrame(vector<PageTableBucket*> &page_tables, unsigned int pa
 /**
  * @brief Evicts a Page which is present in Memory, using LRU algorithm.
  * 
- * @param page_table The page tables of both processes. Both are needed since a page
+ * @param page_tables The page tables of both processes. Both are needed since a page
  * from either of them may be evicted.
  * @param page_table_buckets The number of buckets in the Hashed Page Tables
  * @param queue The Queue used by LRU
