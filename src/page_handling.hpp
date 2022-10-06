@@ -11,6 +11,7 @@
 #include "utils.hpp"
 #include <deque>
 #include <list>
+#include <vector>
 
 /**
  * Represents an Entry of the queue-like structure used by LRU and Second Chance algorithms.
@@ -52,11 +53,11 @@ void insertPageToQueue(std::deque<QueueEntry> &queue, PageTableEntry *page, shor
 
 /* Functions used by Second Chance algorithm -------------------------------------------- */
 
-int secondChanceGetAvailableFrame(PageTableBucket** page_table, unsigned int page_table_buckets,
+int secondChanceGetAvailableFrame(std::vector<PageTableBucket*> &page_tables, unsigned int page_table_buckets,
                                   std::deque<QueueEntry> &queue, char* memory_frames, 
                                   unsigned int& first_free_frame, const unsigned int total_frames, unsigned int &disk_writes);
 
-int secondChanceEvict(PageTableBucket** page_table, int page_table_buckets,
+int secondChanceEvict(std::vector<PageTableBucket*> &page_tables, int page_table_buckets,
                       std::deque<QueueEntry> &queue, char* memory_frames, unsigned int &disk_writes);
 
 /* Functions used by LRU algorithm ------------------------------------------------------ */
@@ -74,11 +75,11 @@ QueueIteratorList::iterator& getPageFromLookupTable(LRU_LookupBucket* lookup_tab
 
 void LRU_MoveFront(std::list<QueueEntry> &queue, QueueIteratorList::iterator &lookup_entry);
 
-int LRU_GetAvailableFrame(PageTableBucket** page_table, unsigned int page_table_buckets,
+int LRU_GetAvailableFrame(std::vector<PageTableBucket*> &, unsigned int page_table_buckets,
                           std::list<QueueEntry> &queue, LRU_LookupBucket* lookup_table, unsigned int lookup_table_size, 
                           char* memory_frames, unsigned int& first_free_frame, const unsigned int total_frames, unsigned int &disk_writes);
 
-int LRU_Evict(PageTableBucket** page_table, unsigned int page_table_buckets,
+int LRU_Evict(std::vector<PageTableBucket*> &, unsigned int page_table_buckets,
               std::list<QueueEntry> &queue, LRU_LookupBucket* lookup_table, 
               unsigned int lookup_table_size, char* memory_frames, unsigned int &disk_writes);
 

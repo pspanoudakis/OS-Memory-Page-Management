@@ -6,9 +6,10 @@
  */
 
 #include <iostream>
-#include <deque>
 #include <fstream>
-#include <string.h>
+#include <deque>
+#include <vector>
+#include <cstring>
 #include <cstdlib>
 
 #include "page_table.hpp"
@@ -18,18 +19,25 @@
 using std::cout;
 using std::endl;
 using std::ifstream;
+using std::vector;
+using std::size_t;
 
-#define INPUT_FILE_1 "samples/bzip.trace"
-#define INPUT_FILE_2 "samples/gcc.trace"
+vector<const char *> input_file_paths {
+    "samples/bzip.trace",
+    "samples/gcc.trace"
+};
+
+const size_t NUM_PROCESSES = input_file_paths.size();
+
 #define PAGE_TABLE_BUCKETS 50
 #define LRU_LOOKUP_BUCKETS 100
 
 // Counters for total statistics
 unsigned int disk_writes = 0, disk_reads = 0, page_faults = 0;
 
-unsigned int LRU_Main(ifstream* infiles, PageTableBucket **page_table, char *memory_frames,
+unsigned int LRU_Main(vector<ifstream> &infiles, vector<PageTableBucket*> &page_tables, char *memory_frames,
                       const unsigned int num_frames, const int total_traces, const unsigned int traces_per_turn);
-unsigned int secondChanceMain(ifstream* infiles, PageTableBucket **page_table, char *memory_frames,
+unsigned int secondChanceMain(vector<ifstream> &infiles, vector<PageTableBucket*> &page_tables, char *memory_frames,
                               const unsigned int num_frames, const int total_traces, const unsigned int traces_per_turn);
 
 int main(int argc, char const *argv[])
@@ -38,8 +46,8 @@ int main(int argc, char const *argv[])
     checkArgs(argc, argv);
 
     // Opening input files
-    ifstream* input_files = new ifstream[2];
-    initInputFiles(input_files, INPUT_FILE_1, INPUT_FILE_2);
+    vector<ifstream> input_files = vector<ifstream>(NUM_PROCESSES);
+    initInputFiles(input_files, input_file_paths);
     
     // Getting number of memory frames
     const unsigned int frames = atoi(argv[2]);
@@ -59,7 +67,7 @@ int main(int argc, char const *argv[])
     // Number of read traces (in case no limit was specified)
     unsigned int read_traces;
 
-    PageTableBucket **page_table = new PageTableBucket*[2];                    // The page tables are stored here
+    vector<PageTableBucket*> page_table = vector<PageTableBucket*>(NUM_PROCESSES);                    // The page tables are stored here
 
     /* This represents the frames in memory.
     Each element is either in FRAME_NOT_USED or FRAME_USED state.
@@ -94,7 +102,7 @@ int main(int argc, char const *argv[])
  * Main function for LRU algorithm. The skeleton is the same as the Second Chance main, 
  * but different structures and page replacement functions are used.
  */
-unsigned int LRU_Main(ifstream* infiles, PageTableBucket **page_table, char *memory_frames,
+unsigned int LRU_Main(vector<ifstream> &infiles, vector<PageTableBucket*> &page_tables, char *memory_frames,
                       const unsigned int num_frames, const int total_traces, const unsigned int traces_per_turn)
 {
     unsigned int occupied_frames = 0;                           // This counts the occupied frames. It is meant to be modified by
@@ -125,7 +133,7 @@ unsigned int LRU_Main(ifstream* infiles, PageTableBucket **page_table, char *mem
         // Extract the trace from the text line
         extractTrace(buffer, action, page_num, offset);
         
-        current_page_entry = getPageTableEntry(page_table[pid], page_num, PAGE_TABLE_BUCKETS);
+        current_page_entry = getPageTableEntry(page_tables[pid], page_num, PAGE_TABLE_BUCKETS);
         if (current_page_entry != nullptr)
         // There is an entry for this page in the Page Table
         {
@@ -146,10 +154,10 @@ unsigned int LRU_Main(ifstream* infiles, PageTableBucket **page_table, char *mem
             page_faults++;
             disk_reads++;
             
-            available_frame = LRU_GetAvailableFrame(page_table, PAGE_TABLE_BUCKETS, page_queue, lookup_table, 
+            available_frame = LRU_GetAvailableFrame(page_tables, PAGE_TABLE_BUCKETS, page_queue, lookup_table, 
                                                     LRU_LOOKUP_BUCKETS, memory_frames, occupied_frames, num_frames, disk_writes);
 
-            current_page_entry = insertEntryToPageTable(page_table[pid], page_num, available_frame, (action == 'W'),
+            current_page_entry = insertEntryToPageTable(page_tables[pid], page_num, available_frame, (action == 'W'),
                                                         true, PAGE_TABLE_BUCKETS);
             memory_frames[available_frame] = FRAME_USED;
 
@@ -162,7 +170,7 @@ unsigned int LRU_Main(ifstream* infiles, PageTableBucket **page_table, char *mem
         // Properly changing between the 2 process when needed
         {
             current_turn_traces = 0;
-            pid = (pid + 1) % 2;
+            pid = (pid + 1) % NUM_PROCESSES;
         }
         read_traces++;
     }
@@ -178,7 +186,7 @@ unsigned int LRU_Main(ifstream* infiles, PageTableBucket **page_table, char *mem
  * Main function for Second chance algorithm. The skeleton is the same as the LRU main, 
  * but different structures and page replacement functions are used.
  */
-unsigned int secondChanceMain(ifstream* infiles, PageTableBucket **page_table, char *memory_frames,
+unsigned int secondChanceMain(vector<ifstream> &infiles, vector<PageTableBucket*> &page_tables, char *memory_frames,
                               const unsigned int num_frames, const int total_traces, const unsigned int traces_per_turn)
 {
     unsigned int occupied_frames = 0;                           // This counts the occupied frames. It is meant to be modified by
@@ -205,7 +213,7 @@ unsigned int secondChanceMain(ifstream* infiles, PageTableBucket **page_table, c
         // Extract the trace from the text line
         extractTrace(buffer, action, page_num, offset);
         
-        current_page_entry = getPageTableEntry(page_table[pid], page_num, PAGE_TABLE_BUCKETS);
+        current_page_entry = getPageTableEntry(page_tables[pid], page_num, PAGE_TABLE_BUCKETS);
         if (current_page_entry != nullptr)
         // There is an entry for this page in the Page Table
         {
@@ -222,9 +230,9 @@ unsigned int secondChanceMain(ifstream* infiles, PageTableBucket **page_table, c
         {
             page_faults++;
             disk_reads++;
-            available_frame = secondChanceGetAvailableFrame(page_table, PAGE_TABLE_BUCKETS, page_queue, 
+            available_frame = secondChanceGetAvailableFrame(page_tables, PAGE_TABLE_BUCKETS, page_queue, 
                                                             memory_frames, occupied_frames, num_frames, disk_writes);
-            current_page_entry = insertEntryToPageTable(page_table[pid], page_num, available_frame, (action == 'W'),
+            current_page_entry = insertEntryToPageTable(page_tables[pid], page_num, available_frame, (action == 'W'),
                                                         true, PAGE_TABLE_BUCKETS);
             memory_frames[available_frame] = FRAME_USED;
 
@@ -235,7 +243,7 @@ unsigned int secondChanceMain(ifstream* infiles, PageTableBucket **page_table, c
         // Properly changing between the 2 process when needed
         {
             current_turn_traces = 0;
-            pid = (pid + 1) % 2;
+            pid = (pid + 1) % NUM_PROCESSES;
         }
         read_traces++;
     }

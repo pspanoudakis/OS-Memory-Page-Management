@@ -8,6 +8,7 @@
 #define PAGE_TABLE_HPP
 
 #include <forward_list>
+#include <vector>
 
 /**
  * Represents a Page Table Entry, with all the required information.
@@ -38,7 +39,7 @@ class PageTableBucket {
 
 /* Hash Page Table functions --------------------------------------------------*/
 
-void initializePageTables(PageTableBucket **table, int num_buckets);
+void initializePageTables(std::vector<PageTableBucket*> &page_tables, int num_buckets);
 
 void deletePageTable(PageTableBucket *table, int size);
 
