@@ -77,11 +77,11 @@ void extractTrace(char *buffer, char &action, unsigned int &page_number, unsigne
  * @param input_files The input file streams.
  * @param file_paths The input file names.
  */
-void initInputFiles(vector<ifstream> &input_files, const vector<const char*> &file_paths)
+bool initInputFiles(vector<ifstream> &input_files, const vector<const char*> &file_paths)
 {
     if (input_files.size() != file_paths.size()) {
         cerr << "Expected 1 input file per process. Abort." << endl;
-        exit(EXIT_FAILURE);
+        return false;
     }
     for (size_t i = 0; i < file_paths.size(); i++)
     {
@@ -91,10 +91,12 @@ void initInputFiles(vector<ifstream> &input_files, const vector<const char*> &fi
             for (size_t j = 0; j < i; j++)
             {
                 input_files[j].close();
-            }            
-            exit(EXIT_FAILURE); 
+            }
+            return false;
         }
     }
+
+    return true;
 }
 
 /**

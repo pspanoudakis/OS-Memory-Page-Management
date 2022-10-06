@@ -22,7 +22,7 @@
 
 int pageHashcode(int page, unsigned long int mod);
 void extractTrace(char *buffer, char &action, unsigned int &page_number, unsigned int &offset);
-void initInputFiles(std::vector<std::ifstream> &input_files, const std::vector<const char*> &file_paths);
+bool initInputFiles(std::vector<std::ifstream> &input_files, const std::vector<const char*> &file_paths);
 void checkArgs(int argc, const char *argv[]);
 void printArgs(const unsigned int& frames, const unsigned int& traces_per_turn, int& total_traces);
 void printStats(unsigned int& page_faults, unsigned int& disk_reads, unsigned int& disk_writes, unsigned int& read_traces);

@@ -22,6 +22,7 @@ using std::ifstream;
 using std::vector;
 using std::size_t;
 
+// Setting the input trace file paths (1 per process)
 vector<const char *> input_file_paths {
     "samples/bzip.trace",
     "samples/gcc.trace"
@@ -47,7 +48,9 @@ int main(int argc, char const *argv[])
 
     // Opening input files
     vector<ifstream> input_files = vector<ifstream>(NUM_PROCESSES);
-    initInputFiles(input_files, input_file_paths);
+    if ( !initInputFiles(input_files, input_file_paths) ){
+        return EXIT_FAILURE;
+    }
     
     // Getting number of memory frames
     const unsigned int frames = atoi(argv[2]);
