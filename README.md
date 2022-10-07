@@ -2,7 +2,8 @@
 ## Project 2 on Operating Systems class
 ## Documentation & Additional comments
 ***
-This project focuses on simulating a **Memory Page Management System**, 
+This was a project for the Winter 2020 Operating Systems course on [DIT@UoA](https://www.di.uoa.gr/en).\
+It focuses on simulating a **Memory Page Management System**, 
 which keeps track of **Page Tables** for different processes & the **free/occupied Memory Frames**.
 
 To serve virtual page requests, it **retrieves** and **stores** requested pages into memory frames
